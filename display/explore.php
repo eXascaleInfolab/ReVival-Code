@@ -111,6 +111,17 @@ while ($row = monetdb_fetch_assoc($result)) {
 
 $page_title = "Explore: " . $title;
 include '../header.php';
+
+/*
+ * the construction below is responsible for creating a chart and then querying a corresponding part of API
+ *     to populate it with data; the pipeline is:
+ * 1) gather all info about *what* has to be shown
+ * 2) form a request to `explore_query.php`
+ * 2.1) explore_query parses all the info and constructs a JSON with the response
+ * 2.2) JSON is deserialized into a proper JS object
+ * 3) all the data is pulled from this object to populate the chart
+ */
+
 ?>
 
 <div class="container-fluid">
@@ -333,7 +344,10 @@ include '../header.php';
                         afterSetExtremes: afterSetExtremes
                     },
                     type: 'datetime',
-                    minRange: 24 * 3600 * 1000 // one day
+                    minRange: 24 * 3600 * 1000, // one day
+                    labels : {
+                        style: { "fontSize" : "15px" }
+                    }
                 },
 
                 legend: {
@@ -345,7 +359,10 @@ include '../header.php';
                     verticalAlign: 'top'
                 },
                 yAxis: {
-                    opposite: true
+                    opposite: true,
+                    labels : {
+                        style : { "fontSize" : "15px", "font-weight" : "bold" }
+                    }
                 },
                 credits: {
                     enabled: false,

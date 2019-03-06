@@ -3,9 +3,12 @@ $page_title = "Matrix Decomposition";
 include '../header.php';
 
 $matrix = @$_GET['matrix'];
+$useudf = @$_GET['useudf'];
 
 // CASE 1 - there's a request to decompose a matrix
-if (isset($matrix)) {
+if (isset($matrix) || isset($useudf)) {
+    $useudf = isset($useudf) ? true : false;
+
     include '../algebra.php';
     $mat = array_map('str_getcsv', str_getcsv($matrix, "\n"));
     ?>
@@ -21,6 +24,24 @@ if (isset($matrix)) {
             </div>
             <div class="col-md-12">
                 <?php
+
+                if ($useudf)
+                {
+                    include '../connect.php';
+
+                    $query = "SELECT x1, x2, x3, x4 FROM example_udf WHERE id = 1;";
+                    $result = monetdb_query($conn, $query);
+
+                    if (!$result) {
+                        die(monetdb_last_error());
+                    }
+
+                    $mat = array();
+                    while ($row = monetdb_fetch_assoc($result))
+                    {
+                        $mat[] = array($row["x1"], $row["x2"], $row["x3"], $row["x4"]);
+                    }
+                }
 
                 $n = count($mat);
                 $m = count($mat[0]);
@@ -42,7 +63,7 @@ if (isset($matrix)) {
 
                     for ($i = 0; $i < $n; $i++) {
                         for ($j = 0; $j < $m; $j++) {
-                            if ($mat[$i][$j] === "null" || $mat[$i][$j] === "NULL" || $mat[$i][$j] === "NaN" || $mat[$i][$j] === "nan" || $mat[$i][$j] === "NAN") {
+                            if (is_null($mat[$i][$j]) || $mat[$i][$j] === "null" || $mat[$i][$j] === "NULL" || $mat[$i][$j] === "NaN" || $mat[$i][$j] === "nan" || $mat[$i][$j] === "NAN") {
                                 $x[$i][$j] = NULL;
                             } else {
                                 $x[$i][$j] = floatval($mat[$i][$j]);
@@ -57,7 +78,37 @@ if (isset($matrix)) {
                     if (!isset($truncation)) $truncation = 1;
 
                     $start_compute = microtime(true);
-                    $result = RMV_all($x, $threshold, $truncation);
+                    if ($useudf)
+                    {
+                        $query = "SELECT y1, y2, y3, y4 FROM sys.centroid_decomposition((SELECT x1, x2, x3, x4 FROM example_udf WHERE id = 1));";
+                        $result = monetdb_query($conn, $query);
+
+                        if (!$result) {
+                            die(monetdb_last_error());
+                        }
+
+                        $recresult = array();
+                        while ($row = monetdb_fetch_assoc($result))
+                        {
+                            $recresult[] = array($row["y1"], $row["y2"], $row["y3"], $row["y4"]);
+                        }
+
+                        $recmat = init_array($n, $m);
+
+                        for ($i = 0; $i < $n; $i++) {
+                            for ($j = 0; $j < $m; $j++) {
+                                if (is_null($recresult[$i][$j]) || $recresult[$i][$j] === "null" || $recresult[$i][$j] === "NULL" || $recresult[$i][$j] === "NaN" || $recresult[$i][$j] === "nan" || $recresult[$i][$j] === "NAN") {
+                                    $recmat[$i][$j] = NULL;
+                                } else {
+                                    $recmat[$i][$j] = floatval($recresult[$i][$j]);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $recmat = RMV_all($x, $threshold, $truncation)[0];
+                    }
 
                     $time_elapsed = (microtime(true) - $start_compute) * 1000;
                     ?>
@@ -68,7 +119,7 @@ if (isset($matrix)) {
                     </div>
                     <div class="col-md-<?php echo $m > 6 ? 12 : 6 ?>">
                         <h3>Recovered matrix:</h3>
-                        <pre style="background:#FCFCF0;font-size:9pt;"><?php print_array_pre($result[0]); ?></pre>
+                        <pre style="background:#FCFCF0;font-size:9pt;"><?php print_array_pre($recmat); ?></pre>
                         <br/>
                     </div>
                     <p>Execution time: <?php echo round($time_elapsed, 3) ?>ms.</p>
@@ -136,81 +187,51 @@ else {
                         <li>maximum size is 100x100.</li>
                     </ul>
                 </div>
+
                 <form id="query" action="">
-                    <div class="col-md-5" style="padding-top: 30px;">
-                        <textarea name="matrix" form="query" class="form-control" rows=15 title="matrixinput">-12,8,-4,-8
+                    <div class="col-md-7" style="padding-top: 30px;">
+                        <textarea name="matrix" form="query" class="form-control" rows=20 title="matrixinput">-12,8,-4,-8
 0,0,0,0
 -48,32,-16,-32
 null,64,-32,-64
 null,24,-12,-24
 null,64,-32,-64
-null,16,-8,-16
-null,8,-4,-8
-null,-32,16,32
+null,16,-8,null
+null,8,-4,null
+null,-32,16,null
 null,8,-4,-8
 12,-8,4,8
 null,-24,12,24
 null,16,-8,-16
 -12,8,-4,-8
-24,-16,8,16</textarea>
-                    </div>
-                    <div class="col-md-4" style="padding-top: 30px;">
-                    </div>
-                    <div class="col-md-3" style="padding-top: 30px;">
-                        <h4>
-                            <button id="prm-show" type="button" class="btn btn-default btn-xs">
-                                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> show parameters
-                            </button>
-                            <button style="display: none;" id="prm-hide" type="button" class="btn btn-default btn-xs">
-                                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> hide parameters
-                            </button>
-                        </h4>
-                        <div style="display: none" id="prm-options">
-                            <div class="form-group">
-                                <label>Threshold epsilon for CD:</label>
-                                <select class="form-control" id="threshold" name="threshold">
-                                    <option>0.1</option>
-                                    <option selected="selected">0.01</option>
-                                    <option>0.001</option>
-                                    <option>0.0001</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Truncation factor for CD:</label>
-                                <select class="form-control" id="truncation" name="truncation">
-                                    <option selected="selected">1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                </select>
-                            </div>
-                        </div>
+24,-16,8,16
+null,-8,4,8
+null,-12,6,12
+null,-24,12,24
+48,-32,16,32
+12,-8,4,8</textarea>
                     </div>
                     <div class="col-md-12" style="padding-top: 30px;">
-                        <input class="btn" type="submit" value="Recover!"/>
+                        <input class="btn" type="submit" value="Recover!"/> <input class="btn" form="udfquery" type="submit" value="Recover (using UDF)"/>
                     </div>
-                    <script>
-                        $('#prm-show').click(function () {
-                            $('#prm-show').hide();
-                            $('#prm-hide').show();
-                            $('#prm-options').show();
-                        });
-                        $('#prm-hide').click(function () {
-                            $('#prm-hide').hide();
-                            $('#prm-options').hide();
-                            $('#prm-show').show();
-                        });
-                        $('#descr-show').click(function () {
-                            $('#descr-show').hide();
-                            $('#descr-hide').show();
-                            $('#descr-options').show();
-                        });
-                        $('#descr-hide').click(function () {
-                            $('#descr-hide').hide();
-                            $('#descr-options').hide();
-                            $('#descr-show').show();
-                        });
-                    </script>
                 </form>
+
+                <form id="udfquery" action="">
+                    <input type="text" name="useudf" form="udfquery" class="form-control" title="useudfinput" style="visibility: hidden" value="true"/>
+                </form>
+
+                <script>
+                    $('#descr-show').click(function () {
+                        $('#descr-show').hide();
+                        $('#descr-hide').show();
+                        $('#descr-options').show();
+                    });
+                    $('#descr-hide').click(function () {
+                        $('#descr-hide').hide();
+                        $('#descr-options').hide();
+                        $('#descr-show').show();
+                    });
+                </script>
             </div>
         </div>
     </div>

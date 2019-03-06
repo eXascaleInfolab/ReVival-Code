@@ -394,8 +394,16 @@ include '../header.php';
                     y: 40,
                     verticalAlign: 'top'
                 },
+                xAxis:{
+                    labels : {
+                        style: { "fontSize" : "15px" }
+                    }
+                },
                 yAxis: {
-                    opposite: true
+                    opposite: true,
+                    labels : {
+                        style : { "fontSize" : "15px", "font-weight" : "bold" }
+                    }
                 },
                 credits: {
                     enabled: false,

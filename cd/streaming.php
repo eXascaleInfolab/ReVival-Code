@@ -238,13 +238,19 @@ include '../header.php';
                 tickInterval: 1,
                 title: {
                     text: 'n'
+                },
+                labels : {
+                    style: { "fontSize" : "15px" }
                 }
             },
             yAxis: {
                 title: {
                     text: 'run-time [ms]'
                 },
-                min: 0
+                min: 0,
+                labels : {
+                    style : { "fontSize" : "15px", "font-weight" : "bold" }
+                }
             },
             tooltip: {
                 formatter: function () {

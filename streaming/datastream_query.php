@@ -27,6 +27,8 @@ $table = 'daily'; //final
 
 $reference_series_ids = array(2181, 2303, 2202);
 
+$reference_series_titles = array("Halden", "Jonschwil", "Liestal");
+
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //                  RETRIEVAL + PRE-PROCESSING OF DATA FROM DB              //
@@ -105,7 +107,7 @@ foreach ($reference_series_ids as $reference_series_id) {
     array_push($all_reference_series_points, $reference_series_points);
 
     $reference_series[$reference_series_id]['id'] = $reference_series_id;
-    $reference_series[$reference_series_id]['title'] = 'Time series ' . $counter++;
+    $reference_series[$reference_series_id]['title'] = "$title";
     $reference_series[$reference_series_id]['points'] =
         z_norm($reference_series_points, $stat[$reference_series_id]['mean'], $stat[$reference_series_id]['stddev']);
 }

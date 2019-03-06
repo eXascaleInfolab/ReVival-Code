@@ -137,6 +137,7 @@ include '../header.php';
             <h3>Recovery of missing values</h3>
             <form id="retrieveForm" action="recover.php" method="get">
                 <input type="hidden" name="dataset" value='<?php echo $dataset; ?>'>
+                <input type="hidden" name="truncation" value='0'>
                 <input type="hidden" name="start" id="hiddenMin" value="">
                 <input type="hidden" name="end" id="hiddenMax" value="">
                 <div class="form-group">
@@ -162,7 +163,7 @@ include '../header.php';
                 <div id="manual_params" style="display: none;">
                     <div class="form-group">
                         <label>Reference time-series:
-                            <small>Multiple selections allowed</small>
+                            <small>Multiple selection allowed (Ctrl + click)</small>
                         </label>
                         <select id="manual" name="reference_serie[]" multiple class="form-control">
 
@@ -178,7 +179,7 @@ include '../header.php';
                         <label>Amount of reference time-series:</label>
                         <select id="amount" class="form-control" name="amount">
                             <option value="2">2</option>
-                            <option value="3">3</option>
+                            <option value="3" selected>3</option>
                             <option value="4">4</option>
                             <option value="5">5</option>
                         </select>
@@ -213,13 +214,10 @@ include '../header.php';
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Truncation factor for CD:</label>
-                    <select class="form-control" id="truncation" name="truncation">
-                        <option selected="selected">1</option>
-                        <option>2</option>
-                        <option>3</option>
-                    </select>
+                    <label>Additional missing values:</label>
+                    <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3">
                 </div>
+
                 <button type="submit" class="btn btn-default pull-right">Recover</button>
             </form>
         </div>
@@ -427,7 +425,10 @@ include '../header.php';
                         afterSetExtremes: afterSetExtremes
                     },
                     type: 'datetime',
-                    minRange: 24 * 3600 * 1000 // one day
+                    minRange: 24 * 3600 * 1000, // one day
+                    labels : {
+                        style: { "fontSize" : "15px" }//, "font-weight" : "bold" }
+                    }
                 },
 
                 legend: {
@@ -439,7 +440,10 @@ include '../header.php';
                     verticalAlign: 'top'
                 },
                 yAxis: {
-                    opposite: true
+                    opposite: true,
+                    labels : {
+                        style : { "fontSize" : "15px" , "font-weight" : "bold" }
+                    }
                 },
                 credits: {
                     enabled: false,

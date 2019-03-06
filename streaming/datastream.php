@@ -10,6 +10,7 @@ include '../header.php';
                 <small>recovery of missing values in time series</small>
             </h2>
         </div>
+        <div>Discharge of Swiss rivers. Unit: m3/s</div>
         <div id="container" style="width:100%; height: 70%; margin: 0 auto"></div>
     </div>
 
@@ -236,7 +237,15 @@ include '../header.php';
                     verticalAlign: 'top'
                 },
                 yAxis: {
-                    opposite: false
+                    opposite: false,
+                    labels : {
+                        style : { "fontSize" : "15px", "font-weight" : "bold" }
+                    }
+                },
+                xAxis : {
+                    labels : {
+                        style: { "fontSize" : "15px" }
+                    }
                 },
                 credits: {
                     enabled: false,

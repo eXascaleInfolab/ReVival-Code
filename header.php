@@ -68,6 +68,11 @@
                         <li><a href="/cd/signvectors.php">Sign vector strategies</a></li>
                     </ul>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about.php">
+                        About
+                    </a>
+                </li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->

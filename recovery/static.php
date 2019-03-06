@@ -265,9 +265,17 @@ if (!isset($interval)) {
                     verticalAlign: 'top',
                     y: -10
                 },
+                xAxis: {
+                    labels : {
+                        style: { "fontSize" : "15px" }
+                    }
+                },
                 yAxis: {
                     min: -100,
-                    max: 100
+                    max: 100,
+                    labels : {
+                        style : { "fontSize" : "15px", "font-weight" : "bold" }
+                    }
                 }
             });
 

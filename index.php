@@ -40,44 +40,43 @@ include 'header.php';
 
             <p>ReVival consists of the following components:</p>
 
-            <div class="col-md-3">
-                <p><b>Display:</b></p>
-                <ul>
-                    <li><a href="/display/datasets.php">Data sets</a></li>
-                    <li><a href="/display/datastream.php">Data stream</a></li>
-                </ul>
+            <div class="row">
+                <div class="col-md-3">
+                    <p><b>Display:</b></p>
+                    <ul>
+                        <li><a href="/display/datasets.php">Data sets</a></li>
+                        <li><a href="/display/datastream.php">Data stream</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <p><b>Recovery:</b></p>
+                    <ul>
+                        <li><a href="/cd/recovery.php">Matrix data</a></li>
+                        <li><a href="/recovery/static.php">Synthetic data</a></li>
+                        <li><a href="/recovery/datasets.php">Real-world batch data</a></li>
+                        <li><a href="/streaming/datastream.php">Real-world streaming data</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-5">
+                    <p><b>Centroid Decomposition:</b></p>
+                    <ul>
+                        <li><a href="/cd/matrixdec.php">Decomposition calculator</a></li>
+                        <li><a href="/cd/streaming.php">Streaming decomposition</a></li>
+                        <li><a href="/cd/signvectors.php">Sign vector strategies</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="col-md-4">
-                <p><b>Recovery:</b></p>
-                <ul>
-                    <li><a href="/cd/recovery.php">Matrix data</a></li>
-                    <li><a href="/recovery/static.php">Synthetic data</a></li>
-                    <li><a href="/recovery/datasets.php">Real-world batch data</a></li>
-                    <li><a href="/streaming/datastream.php">Real-world streaming data</a></li>
-                </ul>
-            </div>
-            <div class="col-md-5">
-                <p><b>Centroid Decomposition:</b></p>
-                <ul>
-                    <li><a href="/cd/matrixdec.php">Decomposition calculator</a></li>
-                    <li><a href="/cd/streaming.php">Streaming decomposition</a></li>
-                    <li><a href="/cd/signvectors.php">Sign vector strategies</a></li>
-                </ul>
-            </div>
+
+            <h3>Publications</h3>
+
+            <ul>
+                <li>Ines Arous, Mourad Khayati, Philippe Cudré-Mauroux, Ying Zhang, Martin Kersten, and Svetlin Stalinlov. <strong>“RecovDB: Accurate and Efficient Missing Blocks Recovery for Large Time Series.”</strong> In <i>35th IEEE International Conference on Data Engineering (ICDE 2019)</i>. Macau, China, 2019.</li>
+                <li>Mourad Khayati, Michael H. Böhlen, and Johann Gamper. <strong>“Memory-Efficient Centroid Decomposition for Long Time Series.”</strong> In <i>IEEE 30th International Conference on Data Engineering (ICDE 2014)</i>, Chicago, ICDE 2014, IL, USA, March 31 - April 4, 2014, 100–111, 2014.</li>
+            </ul>
         </div>
         <div class="col-md-4">
-            <h3>About this tool</h3>
+            <h3>Teams involved:</h3>
 
-            <p><b>Technology</b><br>
-                ReVival is a client-server application. The client-side is implemented using <a
-                        href="https://www.javascript.com/">JavaScript</a>, <a href="https://jquery.com/">jQuery</a>, <a
-                        href="http://www.highcharts.com/">Highcharts</a> (a JavaScript library for charts) and
-                HTML/CSS. The server-side consists of a <a href="http://monetdb.org/">MonetDB</a> database
-                and uses <a href="http://php.org/">PHP</a> for preprocessing the data. </p>
-            <p><b>Contact</b><br>
-                <a href="https://exascale.info/members/mourad-khayati/">Mourad Khayati, PhD</a>,
-                <a href="mailto:zakhar.tymchenko@unifr.ch">Zakhar Tymchenko</a>,
-                Oliver Stapleton.</p>
             <div style="text-align: center;">
                 <a href="https://exascale.info/"><img style="width: 60%;height: auto;"
                                                       src="/resources/Xi_logo.svg"/></a>

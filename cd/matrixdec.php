@@ -55,7 +55,7 @@ if (isset($matrix)) {
                         <h4><strong>R<sup>T</sup></strong>:</h4>
                         <pre style="background:#FCFCF0;font-size:9pt;"><?php print_array_pre(trsp($result[1])); ?></pre>
                         <br/>
-                        <h4>Sign vectors</h4>
+                        <h4>Max. sign vectors</h4>
                         <?php
                         echo "<pre style=\"background:#FCFCF0;font-size:9pt;\">";
                         print_pre_headers("Z", count($result[2][0]));

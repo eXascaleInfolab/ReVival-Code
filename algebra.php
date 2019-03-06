@@ -12,12 +12,8 @@
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-// ReVival in a nutshell
-// https://i.redd.it/j22p8ixa77k11.jpg
-
-
 /** Performs the recovery of missing values on input X, missing values are only present in base series.
- *  Recovery is performed until threshold of mean square different is reached or 100 iterations.
+ *  Recovery is performed until 100 iterations or a threshold of mean square difference is reached.
  *  Uses truncated CD with a truncation factor of k.
  * @param $x : array of arrays | matrix to be recovered
  * @param $base_series_index : Int | index of base series
@@ -30,7 +26,23 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
     $n = count($x); // number of rows
     $m = count($x[0]); // number of columns
 
-    if ($k >= $m) $k = 1;
+    if ($k >= $m) $k = 0;
+
+    if ($k == 0)
+    {
+        if ($m == 2 || $m == 3)
+        {
+            $k = 1;
+        }
+        else if ($m == 4 || $m == 5)
+        {
+            $k = 2;
+        }
+        else
+        {
+            $k = 3;
+        }
+    }
 
     // write out all indexes of missing values in the base series
     $missing_value_indices = array();
@@ -116,7 +128,7 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
 }
 
 
-/** Performs the recovery of missing values on input X, missing values are only present in base series.
+/** Performs the recovery of missing values on input X, missing values can be present in all series.
  *  Recovery is performed until threshold of mean square different is reached or 100 iterations.
  *  Uses truncated CD with a truncation factor of k.
  * @param $x : array of arrays | matrix to be recovered
@@ -245,7 +257,8 @@ function cachedTCD($x, &$z_all, &$l, &$r, $truncation)
     for ($col = 0; $col < $truncation; $col++) {
         // fetch z to pass inside ISSV+
         $z = $z_all[$col];
-        incremental_scalable_sign_vector_plus($x, $n, $m, $s, $v, $z);
+        //incremental_scalable_sign_vector_plus($x, $n, $m, $s, $v, $z);
+        local_sign_vector($x, $n, $m, $s, $v, $z);
         $z_all[$col] = $z;
 
         $sum_squared = 0;
@@ -340,9 +353,7 @@ function incremental_scalable_sign_vector_plus(&$x, $n, $m, &$s, &$v, &$z)
                     // flip the sign and update V
 
                     // change sign
-                    if ($pos != 0) {
-                        $z[$pos] = $z[$pos] * (-1);
-                    }
+                    $z[$pos] = $z[$pos] * (-1);
 
                     // calculate the direction of sign flip
                     $factor = $z[$pos] + $z[$pos];
@@ -364,6 +375,60 @@ function incremental_scalable_sign_vector_plus(&$x, $n, $m, &$s, &$v, &$z)
             }
         }
     }
+}
+
+/**
+ * Helper function for CD to find the maximizing sign vector using LSV method without init
+ * @param $x : array& of arrays | matrix being currently decomposed
+ * @param $n : Int | matrix rows
+ * @param $m : Int | matrix cols
+ * @param $s : array& | service vector
+ * @param $v : array& | service vector
+ * @param $z : array& | sign vector to be used as a basis
+ * @return void
+ */
+function local_sign_vector(&$x, $n, $m, &$s, &$v, &$z)
+{
+    $z2 = trsp(array($z));
+    $direction_col = matmult_AT_B($x, $z2);
+    $direction = trsp($direction_col);
+    //
+    // 2+ pass - update to Z
+    //
+
+    $flipped = false;
+    $lastNorm = matmult($direction, $direction_col)[0][0] + 1E-10; // eps to avoid "parity flip"
+
+    $direction = $direction[0];
+
+    do
+    {
+        $flipped = false;
+
+        for ($i = 0; $i < $n; ++$i)
+        {
+            $signDouble = $z[$i] * 2;
+            $gradFlip = 0.0;
+
+            for ($j = 0; $j < $m; ++$j)
+            {
+                $localMod = $direction[$j] - $signDouble * $x[$i][$j];
+                $gradFlip += $localMod * $localMod;
+            }
+
+            if ($gradFlip > $lastNorm) // net positive from flipping
+            {
+                $flipped = true;
+                $z[$i] *= -1;
+                $lastNorm = $gradFlip + 1E-10;
+
+                for ($j = 0; $j < $m; ++$j)
+                {
+                    $direction[$j] -= $signDouble * $x[$i][$j];
+                }
+            }
+        }
+    } while ($flipped);
 }
 
 

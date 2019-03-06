@@ -100,7 +100,15 @@ include '../header.php';
                     verticalAlign: 'top'
                 },
                 yAxis: {
-                    opposite: false
+                    opposite: false,
+                    labels : {
+                        style : { "fontSize" : "15px", "font-weight" : "bold" }
+                    }
+                },
+                xAxis : {
+                    labels : {
+                        style: { "fontSize" : "15px" }
+                    }
                 },
                 credits: {
                     enabled: false,
