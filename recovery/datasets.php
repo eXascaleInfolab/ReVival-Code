@@ -387,7 +387,7 @@ include '../header.php';
 
             <tr>
                 <td>
-                    <a href="explore.php?dataset=<?php echo $dataset_object->id; ?>"><?php echo $dataset_object->title; ?></a>
+                    <a href="explore_complete.php?dataset=<?php echo $dataset_object->id; ?>"><?php echo $dataset_object->title; ?></a>
                 </td>
                 <td><?php echo $dataset_object->source_title; ?> <a
                             href="<?php echo $dataset_object->source_url; ?>"><span class="glyphicon glyphicon-link"
