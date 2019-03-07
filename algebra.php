@@ -136,7 +136,7 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
  * @param $k : Int | truncation factor for CD
  * @return array : array | where [0] = X with recovered values; [1] = Int, number of iterations recovery took
  */
-function RMV_all($x, $threshold, $k)
+function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev = NULL)
 {
     $n = count($x); // number of rows
     $m = count($x[0]); // number of columns
@@ -172,6 +172,25 @@ function RMV_all($x, $threshold, $k)
             $z[] = 1.0;
         }
         $z_all[] = $z;
+    }
+
+    // normalize
+    if ($normalize) {
+        // normalization
+        if (is_null($mean) || is_null($stddev))
+        {
+            $mean = init_vector($m, 0);
+            $stddev = init_vector($m, 0);
+            //print_array_csv($mean);
+            //print_array_csv($stddev);
+            getmeanstddev($x,  $mean, $stddev, $n, $m);
+        }
+
+        for ($i = 0; $i < $n; ++$i) {
+            for ($j = 0; $j < $m; ++$j) {
+                $x[$i][$j] = ($x[$i][$j] - $mean[$j]) / $stddev[$j];
+            }
+        }
     }
 
     $diff = 99.0;
