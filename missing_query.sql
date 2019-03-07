@@ -80,8 +80,24 @@ Output:
 
 SET SCHEMA data;
 
---??
-
+SELECT
+    daily.datetime as datetime,
+	CASE
+	WHEN daily.datetime BETWEEN '1996-11-25 00:00:00' AND '1996-12-05 00:00:00'
+		THEN NULL 
+	ELSE daily.value
+	END AS value,
+    series.title
+FROM
+    series
+LEFT JOIN
+    daily
+ON
+    series.id = daily.series_id
+WHERE 
+    series.id = 2181 AND datetime between '1996-11-16 00:00:00' and '1996-12-16 00:00:00'
+ORDER BY
+   datetime;
 
 -------------
 
