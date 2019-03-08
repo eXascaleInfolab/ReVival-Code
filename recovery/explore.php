@@ -217,7 +217,7 @@ include '../header.php';
                     <label>Additional missing values:</label>
                     <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3">
                 </div>
-
+                <button type="submit" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" class="btn btn-default pull-right">Recover</button>
             </form>
         </div>
