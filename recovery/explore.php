@@ -7,7 +7,7 @@ if (!isset($dataset)) {
 }
 
 include '../connect.php';
-
+include '../logger.php';
 
 // Prepare a query for execution
 $result = monetdb_prepare($conn, "dataset_query",
@@ -131,8 +131,9 @@ include '../header.php';
         <div id="menu" class="col-md-3" style="padding-top: 40px;">
             <h3><?php echo $title; ?></h3>
             <p><?php echo $desc; ?></p>
-            <p>Source: <a
-                        href="<?php echo $source_url; ?>"><?php echo $source_title; ?></a><br>Unit: <?php echo $unit; ?>
+            <p>
+                <span>Source: </span>
+                <a href="<?php echo $source_url; ?>"><?php echo $source_title; ?></a><br>Unit: <?php echo $unit; ?>
             </p>
             <h3>Recovery of missing values</h3>
             <form id="retrieveForm" action="recover.php" method="get">
@@ -142,14 +143,13 @@ include '../header.php';
                 <input type="hidden" name="end" id="hiddenMax" value="">
                 <div class="form-group">
                     <label>Recover missing values for:</label>
-                    <select class="form-control" id="base" name="base_serie">
+                    <select class="form-control" id="base" name="base_serie" multiple>
                         <?php foreach ($series as $id => $serie_title) {
                             echo "<option value='" . $id . "'>" . $serie_title . "</option>";
                         } ?>
-
                     </select>
                 </div>
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label>Choice of reference time-series: <a data-container="body" data-toggle="popover"
                                                                data-placement="top"
                                                                data-content="Manual mode let's you manually choose the reference series. Globally correlated mode automatically takes the n most correlated series as reference series. ">
@@ -159,8 +159,8 @@ include '../header.php';
                         <option value="correlated" selected="selected">Automatically (based on correlation)</option>
                         <option value="manual">Manually (select below)</option>
                     </select>
-                </div>
-                <div id="manual_params" style="display: none;">
+                </div> -->
+                <!-- <div id="manual_params" style="display: none;">
                     <div class="form-group">
                         <label>Reference time-series:
                             <small>Multiple selection allowed (Ctrl + click)</small>
@@ -173,8 +173,8 @@ include '../header.php';
 
                         </select>
                     </div>
-                </div>
-                <div id="correlated_params">
+                </div> -->
+                <!-- <div id="correlated_params">
                     <div class="form-group">
                         <label>Amount of reference time-series:</label>
                         <select id="amount" class="form-control" name="amount">
@@ -184,7 +184,7 @@ include '../header.php';
                             <option value="5">5</option>
                         </select>
                     </div>
-                </div>
+                </div> -->
                 <?php if (count($comparison_series) > 0) { ?>
                     <?php foreach ($comparison_series as $id => $serie_title) {
                     } ?>
@@ -195,7 +195,7 @@ include '../header.php';
                         </label>
                     </div>
                 <?php } ?>
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label>Time range:</label>
                     <select class="form-control" id="range" name="range">
                         <option value="7">week</option>
@@ -203,7 +203,7 @@ include '../header.php';
                         <option value="365">year</option>
                         <option value="0">as selected in chart</option>
                     </select>
-                </div>
+                </div> -->
                 <div class="form-group">
                     <label>Threshold epsilon for CD:</label>
                     <select class="form-control" id="threshold" name="threshold">
@@ -217,7 +217,7 @@ include '../header.php';
                     <label>Additional missing values:</label>
                     <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3">
                 </div>
-
+                <button type="submit" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" class="btn btn-default pull-right">Recover</button>
             </form>
         </div>
@@ -311,24 +311,17 @@ include '../header.php';
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
             $.getJSON(query, function (data) {
                 var explore_object = data[0];
-                var i = 0;
-                explore_object.series.forEach(function (series) {
+                // var i = 0;
+                console.log('RESPONSE: ', explore_object);
+                explore_object.series.forEach(function (series, i) {
                     chart.series[i].setData(series.points);
-                    i += 1;
+                    // i += 1;
                 });
                 chart.hideLoading();
             });
         }
 
-        /**
-         * Load new data depending on the selected min and max
-         */
-        function afterSetExtremes(e) {
-            min = Math.round(e.min);
-            max = Math.round(e.max);
-            reloadChartWithExtremes(min, max);
-        }
-
+    
         function reloadChartWithExtremes(min, max) {
             var query = 'explore_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&start=' + min + '&end=' + max + '&callback=?';
             loadChart(query);
@@ -337,6 +330,26 @@ include '../header.php';
         function reloadEntireChart() {
             var query = 'explore_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?';
             loadChart(query);
+        }
+
+
+        /// CHART EVENT HANDLERS
+        ////////////////////////
+
+        // handles chart legend item clicks
+        function legendItemClickHandler(e) {
+            console.log(`${e.target.name} click!`);
+            // TODO handle logic with togged serie
+        }
+
+        /**
+         * Load new data depending on the selected min and max
+         */
+        function afterSetExtremesHandler(e) {
+            console.log('[afterSetExtremesHandler] -- ', e);
+            min = Math.round(e.min);
+            max = Math.round(e.max);
+            reloadChartWithExtremes(min, max);
         }
 
         // See source code from the JSONP handler at https://github.com/highcharts/highcharts/blob/master/samples/data/from-sql.php
@@ -379,6 +392,13 @@ include '../header.php';
                     valueDecimals: 4
                 },
 
+                plotOptions: {
+                    series: {
+                        events: {
+                            legendItemClick: legendItemClickHandler,
+                        },
+                    },
+                },
                 series: renderedSeries,
 
                 scrollbar: {
@@ -422,7 +442,7 @@ include '../header.php';
 
                 xAxis: {
                     events: {
-                        afterSetExtremes: afterSetExtremes
+                        afterSetExtremes: afterSetExtremesHandler
                     },
                     type: 'datetime',
                     minRange: 24 * 3600 * 1000, // one day
