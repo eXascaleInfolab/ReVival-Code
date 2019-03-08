@@ -1,4 +1,6 @@
 <?php session_start();
+// this is a workaround
+error_reporting(0);
 
 $dataset = @$_GET['dataset'];
 $base_serie = @$_GET['base_serie'];

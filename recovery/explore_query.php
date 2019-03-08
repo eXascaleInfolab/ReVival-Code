@@ -1,4 +1,4 @@
-<?php
+<?php session_start();
 
 $callback = $_GET['callback'];
 if (!preg_match('/^[a-zA-Z0-9_]+$/', $callback)) {
@@ -158,6 +158,9 @@ foreach ($series as &$serie) {
 }
 
 $explore_object->series = array_values($series);
+
+// cash series
+$_SESSION['series'] = $explore_object;
 
 // print it
 header('Content-Type: text/javascript');
