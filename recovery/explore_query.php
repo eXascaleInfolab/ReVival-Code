@@ -42,18 +42,18 @@ $series_object = new stdClass();
 // Prepare a query for execution
 $result = monetdb_prepare($conn, "my_query",
     'SELECT
-                                series.id as id,
-                                series.title as title  
-                            FROM
-                                sets_series
-                            LEFT JOIN 
-                                series
-                            ON
-                                sets_series.serie_id = series.id
-                            WHERE 
-                                sets_series.set_id = $1
-                            ORDER BY
-                               title');
+        series.id as id,
+        series.title as title  
+    FROM
+        sets_series
+    LEFT JOIN 
+        series
+    ON
+        sets_series.serie_id = series.id
+    WHERE 
+        sets_series.set_id = $1
+    ORDER BY
+        title');
 
 $result = monetdb_execute($conn, "my_query", array($dataset));
 

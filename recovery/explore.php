@@ -136,7 +136,7 @@ include '../header.php';
                 <a href="<?php echo $source_url; ?>"><?php echo $source_title; ?></a><br>Unit: <?php echo $unit; ?>
             </p>
             <h3>Recovery of missing values</h3>
-            <form id="retrieveForm" action="recover.php" method="get">
+            <form id="retrieveForm">
                 <input type="hidden" name="dataset" value='<?php echo $dataset; ?>'>
                 <input type="hidden" name="truncation" value='0'>
                 <input type="hidden" name="start" id="hiddenMin" value="">
@@ -214,11 +214,21 @@ include '../header.php';
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Additional missing values:</label>
-                    <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3">
+                    <label>Drop values by:</label>
+                    <select class="form-control" name="drop">
+                        <option value="0">0%</option>
+                        <option value="0.10">10%</option>
+                        <option value="0.20">20%</option>
+                        <option value="0.40">40%</option>
+                        <option value="0.60">60%</option>
+                        <option value="0.80">80%</option>
+                    </select>
+                    <!-- <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3"> -->
                 </div>
-
-                <button type="submit" class="btn btn-default pull-right">Recover</button>
+                <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
+                <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
+                <input id="applyBtn" type="submit" formaction="/api/drop" value="Apply" class="btn btn-default pull-left" />
+                <input id="recoverBtn" type="submit" formaction="/api/recover" value="Recover" class="btn btn-default pull-right" />
             </form>
         </div>
     </div>
@@ -230,7 +240,78 @@ include '../header.php';
         $('[data-toggle="popover"]').popover()
     })
 
+    // document ready
     $(function () {
+        var norm = 1;
+        var min, max;
+
+        // object to hold chart settings mutations;
+        let store = {
+            norm,
+        };
+
+        /**
+        Makes call to backend
+         */
+        function requestSeries(url, data) {
+            const headers = new Headers (
+                {
+                    'Content-Type': 'application/json',
+                },
+            );
+            const options = {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(data),
+            };
+            return fetch(new Request(url, options));
+        };
+
+        function updateStore(args) {
+            store = {
+                ...store,
+                ...args,
+            };
+            return store;
+        }
+
+        $('#applyBtn').on('click', function(e) {
+            const form = e.target.form;
+            form.action = e.target.formAction;
+        });
+
+        $('#recoverBtn').on('click', function(e) {
+            const form = e.target.form;
+            form.action = e.target.formAction;
+        });
+
+        $('#retrieveForm').on('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const selectedOptions = form['base_serie'].selectedOptions;
+            const series = Array.from(selectedOptions).map(next => parseInt(next.value, 10));
+            const data = {
+                norm: store.norm,
+                start: store.min,
+                end: store.max,
+                series,
+                drop: parseFloat(form['drop'].value, 10),
+            };
+            const url = form.action;
+            requestSeries(url, data)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response.json();
+                    }
+                    return Promise.reject(response.statusText);
+                })
+                .then((json) => {
+                    // TODO update chart
+                    console.log(json);
+                })
+                .catch(err => console.error(err));
+        });
+
         $(window).bind("pageshow", function () {
             var form = $("#retrieveForm");
             // let the browser natively reset defaults
@@ -291,11 +372,10 @@ include '../header.php';
             $('#hiddenMax').val(Math.round(chart.xAxis[0].max));
         });
 
-        var norm = 1;
-        var min, max;
-
+       
         function setNorm(i) {
             norm = i;
+            updateStore({norm});
             // if no extremes set => load entire range
             if (min == null || max == null) {
                 reloadEntireChart();
@@ -349,6 +429,11 @@ include '../header.php';
             console.log('[afterSetExtremesHandler] -- ', e);
             min = Math.round(e.min);
             max = Math.round(e.max);
+            store = {
+                ...store,
+                min,
+                max,
+            };
             reloadChartWithExtremes(min, max);
         }
 
@@ -376,7 +461,19 @@ include '../header.php';
 
                 chart: {
                     type: 'line',
-                    zoomType: 'x'
+                    zoomType: 'x',
+                    events: {
+                        load: function (e) {
+                            try {
+                                const firstSerie = e.target.series[0]
+                                const min = firstSerie.xAxis.dataMin;
+                                const max = firstSerie.xAxis.dataMax;
+                                updateStore({min, max});
+                            } catch(err) {
+                                console.error(err);
+                            }
+                        }
+                    }
                 },
 
                 /*subtitle: {
