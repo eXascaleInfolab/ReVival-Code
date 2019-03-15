@@ -7,10 +7,6 @@ use ReVival\utils;
 use \InvalidArgumentException;
 
 class UtilsTest extends TestCase {
-    public function testPartitionException() {
-        $this->expectException(InvalidArgumentException::class);
-        Utils::partition(0, 4, 5);
-    }
 	public function testPartition() {
         
         $this->assertEquals(
