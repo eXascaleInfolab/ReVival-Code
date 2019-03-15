@@ -54,24 +54,25 @@ $delta = (int)($shift / 2);
 $start_index = $threshold + $delta;
 $end_index = $rows - ($threshold + $delta);
 
-// var_dump($time_stamps);
-// echo "threshold -> $threshold";
-// echo "shift -> $shift";
-// echo "start_index -> $start_index";
-// echo "end_index -> $end_index";
-
 $indices = Utils::partition($start_index, $end_index, count($series_ids) - 1);
-// var_dump($indices);
+
+$explore_object = $_SESSION['series'];
 
 $response = new stdClass();
 foreach($series_ids as $key => $value) {
     $start_drop_ts = $time_stamps[$indices[$key] - $delta];
     $end_drop_ts = $time_stamps[$indices[$key] + $delta];
     $points = drop_values($conn, $table, $value, $start, $end, $start_drop_ts, $end_drop_ts, $norm);
-    $response -> $value = $points;
+    // loop over cashed series swap points
+    foreach($explore_object->{'series'} as &$serie) {
+        $s_id = (int)$serie['id'];
+        if ($s_id === $value) {
+            $serie['points'] = $points;
+        }
+    }
 }
 
 http_response_code(200);
-echo json_encode($response);
+echo json_encode($explore_object);
 monetdb_disconnect();
 ?>

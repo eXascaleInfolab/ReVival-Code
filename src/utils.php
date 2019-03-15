@@ -32,12 +32,21 @@ class Utils {
     }
 
 	static function partition($startIndex, $endIndex, $parts) {
-		if ($parts > ($endIndex - $startIndex)) {
-			throw new InvalidArgumentException('parts exceed index range');
-		}
 		if ($parts === 0) {
 			return array($startIndex, $endIndex);
 		}
+
+		if ($parts > ($endIndex - $startIndex)) {
+			$middle = ($startIndex + $endIndex) / 2;
+			// throw new InvalidArgumentException('parts exceed index range');
+			$result = array($startIndex);
+			for ($i=0; $i < $parts - 1; $i++) {
+				array_push($result, $middle);
+			}
+			array_push($result, $endIndex);
+			return $result;
+		}
+	
 		$shift = ($endIndex - $startIndex) / $parts;
 		$result = array();
 		for($i = $startIndex; $i < $endIndex;) {

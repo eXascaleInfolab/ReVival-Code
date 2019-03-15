@@ -306,8 +306,8 @@ include '../header.php';
                     return Promise.reject(response.statusText);
                 })
                 .then((json) => {
-                    // TODO update chart
                     console.log(json);
+                    updateSeries(json.series);
                 })
                 .catch(err => console.error(err));
         });
@@ -386,6 +386,15 @@ include '../header.php';
             }
         }
 
+        function updateSeries(series) {
+            const chart = $('#container').highcharts();
+            chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
+            series.forEach((serie, i) => {
+                chart.series[i].setData(serie.points);
+            });
+            chart.hideLoading();
+        }
+
         function loadChart(query) {
             var chart = $('#container').highcharts();
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
@@ -444,8 +453,8 @@ include '../header.php';
             var visibility = true;
 
             explore_object.series.forEach(function (series) {
-
                 renderedSeries.push({
+                    id: parseInt(series.id, 10),
                     type: 'line',
                     visible: visibility,
                     name: series.title,
