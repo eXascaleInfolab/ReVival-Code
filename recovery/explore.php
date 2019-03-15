@@ -225,15 +225,10 @@ include '../header.php';
                     </select>
                     <!-- <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3"> -->
                 </div>
-<<<<<<< HEAD
                 <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
                 <input id="applyBtn" type="submit" formaction="/api/drop" value="Apply" class="btn btn-default pull-left" />
                 <input id="recoverBtn" type="submit" formaction="/api/recover" value="Recover" class="btn btn-default pull-right" />
-=======
-                <button type="submit" class="btn btn-default pull-left">Apply</button>
-                <button type="submit" class="btn btn-default pull-right">Recover</button>
->>>>>>> master
             </form>
         </div>
     </div>
