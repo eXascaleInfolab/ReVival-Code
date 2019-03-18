@@ -227,8 +227,8 @@ include '../header.php';
                 </div>
                 <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
-                <input id="applyBtn" type="submit" formaction="/api/drop" value="Apply" class="btn btn-default pull-left" />
-                <input id="recoverBtn" type="submit" formaction="/api/recover" value="Recover" class="btn btn-default pull-right" />
+                <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
+                <input id="recoverBtn" type="submit" formaction="/api/recover.php" value="Recover" class="btn btn-default pull-right" />
             </form>
         </div>
     </div>
