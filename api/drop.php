@@ -56,7 +56,7 @@ $end_index = $rows - ($threshold + $delta);
 
 $indices = Utils::partition($start_index, $end_index, count($series_ids) - 1);
 
-$explore_object = $_SESSION['series'];
+$explore_object = clone $_SESSION['series'];
 
 $response = new stdClass();
 foreach($series_ids as $key => $value) {
@@ -71,6 +71,9 @@ foreach($series_ids as $key => $value) {
         }
     }
 }
+
+// cash series
+$_SESSION['drop'] = $explore_object;
 
 http_response_code(200);
 echo json_encode($explore_object);
