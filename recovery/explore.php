@@ -295,6 +295,7 @@ include '../header.php';
                 start: store.min,
                 end: store.max,
                 series,
+                threshold: parseFloat(form['threshold'].value, 10),
                 drop: parseFloat(form['drop'].value, 10),
             };
             const url = form.action;
@@ -400,11 +401,9 @@ include '../header.php';
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
             $.getJSON(query, function (data) {
                 var explore_object = data[0];
-                // var i = 0;
                 console.log('RESPONSE: ', explore_object);
                 explore_object.series.forEach(function (series, i) {
                     chart.series[i].setData(series.points);
-                    // i += 1;
                 });
                 chart.hideLoading();
             });

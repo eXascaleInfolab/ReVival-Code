@@ -310,6 +310,7 @@ foreach ($reference_series_ids as $reference_series_id) {
 // Add all reference series to the object
 $retrieve_object->reference_series = array_values($reference_series);
 
+// comparison serie is the one to be recovered ;)
 if (isset($comparison_series_id)) {
 
     $query = "
