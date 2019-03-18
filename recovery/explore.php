@@ -225,10 +225,21 @@ include '../header.php';
                     </select>
                     <!-- <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3"> -->
                 </div>
+                <div id="ground" class="form-group hidden">
+                    <label for="groundTruth">
+                        <input id="groundTruth" type="checkbox" checked name="groundTruth">
+                        <span> Ground Truth</span>
+                    </label>
+                </div>
                 <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
                 <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
-                <input id="recoverBtn" type="submit" formaction="/api/recover.php" value="Recover" class="btn btn-default pull-right" />
+                <input
+                    id="recoverBtn"
+                    type="submit"
+                    formaction="/api/recover.php"
+                    value="Recover" class="btn btn-default pull-right hidden"
+                />
             </form>
         </div>
     </div>
@@ -285,6 +296,16 @@ include '../header.php';
             form.action = e.target.formAction;
         });
 
+        function showRecover() {
+            $('#recoverBtn').removeClass('hidden');
+            $('#ground').removeClass('hidden');
+        }
+
+        function hideRecover() {
+            $('#recoverBtn').addClass('hidden');
+            $('#ground').addClass('hidden');
+        }
+
         $('#retrieveForm').on('submit', function(e) {
             e.preventDefault();
             const form = e.target;
@@ -296,6 +317,7 @@ include '../header.php';
                 end: store.max,
                 series,
                 threshold: parseFloat(form['threshold'].value, 10),
+                ground: form['groundTruth'].checked,
                 drop: parseFloat(form['drop'].value, 10),
             };
             const url = form.action;
@@ -309,6 +331,7 @@ include '../header.php';
                 .then((json) => {
                     console.log(json);
                     updateSeries(json.series);
+                    showRecover();
                 })
                 .catch(err => console.error(err));
         });
@@ -406,6 +429,7 @@ include '../header.php';
                     chart.series[i].setData(series.points);
                 });
                 chart.hideLoading();
+                hideRecover();
             });
         }
 
