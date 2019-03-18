@@ -11,7 +11,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 $raw_input = file_get_contents('php://input');
 $json = json_decode($raw_input);
 $drop = $json -> {'drop'};
-$norm = $json -> {'norm'};
+$norm = (int)$json -> {'norm'};
 // series ids for which the drop % will be applied.
 $series_ids = $json -> {'series'};
 

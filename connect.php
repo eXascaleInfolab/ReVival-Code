@@ -14,6 +14,58 @@ monetdb_query($conn, "SET SCHEMA data");
 monetdb_query($conn, "SET TIME ZONE INTERVAL '+00:00' HOUR TO MINUTE");
 
 
+function get_serie_data($conn, $table, $serie_id, $start, $end, $norm = 0) {
+    $qry = "
+        SELECT
+            sys.epoch($table.datetime) * 1000 AS datetime,
+            $table.value as value,
+            series.title as title
+        FROM
+            series
+        LEFT JOIN
+            $table
+        ON
+            series.id = $table.series_id
+        WHERE 
+            series_id = $serie_id AND datetime between sys.epoch($start) and sys.epoch($end)
+        ORDER BY
+            datetime
+        ";
+    $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
+    $obj = new stdClass();
+    $ponts = array();
+    $serie_name = NULL;
+    if ($norm != 0) {
+        $statistics = get_statistics($conn, $table, $serie_id);
+    }
+    while ($row = monetdb_fetch_assoc($res)) {
+        if ($serie_name === NULL) {
+            $serie_name = $row['title'];
+        } 
+        $datetime = (int)($row['datetime']);
+        $value = is_null($row['value']) ? NULL : (float)($row['value']);
+        if ($value === NULL) {
+            $points[] = array($datetime, NULL);
+        } else {
+            if ($norm === 0) {
+                $points[] = array($datetime, $value);
+            } elseif ($norm === 1) {
+                $mean = $statistics -> {'mean'};
+                $stddev = $statistics -> {'stddev'};
+                $points[] = array($datetime, ($value - $mean) / $stddev);
+            } elseif ($norm === 2) {
+                $min = $statistics -> {'min'};
+                $max = $statistics -> {'max'};
+                $points[] = array($datetime, ($value - $min) / ($max - $min));
+            }
+        }
+    }
+    $obj -> {'id'} = $serie_id;
+    $obj -> {'title'} = $serie_name;
+    $obj -> {'points'} = $points;
+    return $obj;
+}
+
 function get_statistics($conn, $table, $serie_id) {
     $qry = "
     SELECT
@@ -67,19 +119,18 @@ function drop_values($conn, $table, $serie_id, $start, $end, $start_drop_ts, $en
         if ($value === NULL) {
             $points[] = array($datetime, NULL);
         } else {
-            if ($norm == 0) {
+            if ($norm === 0) {
                 $points[] = array($datetime, $value);
-            } elseif ($norm == 1) {
+            } elseif ($norm === 1) {
                 $mean = $statistics -> {'mean'};
                 $stddev = $statistics -> {'stddev'};
                 $points[] = array($datetime, ($value - $mean) / $stddev);
-            } elseif ($norm == 2) {
+            } elseif ($norm === 2) {
                 $min = $statistics -> {'min'};
                 $max = $statistics -> {'max'};
                 $points[] = array($datetime, ($value - $min) / ($max - $min));
             }
         }
-  
     }
     return $points;
 }
