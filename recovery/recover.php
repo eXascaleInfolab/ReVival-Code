@@ -5,7 +5,7 @@ error_reporting(0);
 $dataset = @$_GET['dataset'];
 $base_serie = @$_GET['base_serie'];
 $mode = @$_GET['mode'];
-$amount = @$_GET['amount'];
+$amount = @$_GET['amount']; // reference time series count
 
 $start = @$_GET['start'];
 if ($start && !preg_match('/^[0-9]+$/', $start)) {
