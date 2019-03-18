@@ -46,13 +46,16 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
 
     // write out all indexes of missing values in the base series
     $missing_value_indices = array();
-    for ($i = 0; $i < $n; $i++) {
-        if (is_null($x[$i][$base_series_index])) {
+    for ($i = 0; $i < $n; $i++)
+    {
+        if (is_null($x[$i][$base_series_index]))
+        {
             $missing_value_indices[] = $i;
         }
     }
 
-    if (count($missing_value_indices) == 0) {
+    if (count($missing_value_indices) == 0)
+    {
         return array($x, 0);
     }
 
@@ -63,16 +66,19 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
     $r = init_array($m, $k, 0);
 
     $z_all = array();
-    for ($j = 0; $j < $k; $j++) {
+    for ($j = 0; $j < $k; $j++)
+    {
         $z = array();
-        for ($i = 0; $i < $n; $i++) {
+        for ($i = 0; $i < $n; $i++)
+        {
             $z[] = 1.0;
         }
         $z_all[] = $z;
     }
 
     // normalize
-    if ($normalize) {
+    if ($normalize)
+    {
         // normalization
         if (is_null($mean) || is_null($stddev))
         {
@@ -80,11 +86,13 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
             $stddev = init_vector($m, 0);
             //print_array_csv($mean);
             //print_array_csv($stddev);
-            getmeanstddev($x,  $mean, $stddev, $n, $m);
+            getmeanstddev($x, $mean, $stddev, $n, $m);
         }
 
-        for ($i = 0; $i < $n; ++$i) {
-            for ($j = 0; $j < $m; ++$j) {
+        for ($i = 0; $i < $n; ++$i)
+        {
+            for ($j = 0; $j < $m; ++$j)
+            {
                 $x[$i][$j] = ($x[$i][$j] - $mean[$j]) / $stddev[$j];
             }
         }
@@ -93,7 +101,8 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
     $diff = 99.0;
     $iters = 0;
 
-    while ($diff >= $threshold && $iters < 100) {
+    while ($diff >= $threshold && $iters < 100)
+    {
         cachedTCD($x, $z_all, $l, $r, $k);
 
         $x_reconstruction = matmult_A_BT($l, $r);
@@ -101,7 +110,8 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
         // update the "missing values" in X with those of x_truncated & calculate meansquarediff
         $diff = 0.0;
 
-        for ($mv = 0; $mv < count($missing_value_indices); $mv++) {
+        for ($mv = 0; $mv < count($missing_value_indices); $mv++)
+        {
             $idx = $missing_value_indices[$mv];
             $oldval = $x[$idx][$base_series_index];
             $newval = $x_reconstruction[$idx][$base_series_index];
@@ -116,9 +126,12 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
     }
 
     // denormalize back
-    if ($normalize) {
-        for ($i = 0; $i < $n; ++$i) {
-            for ($j = 0; $j < $m; ++$j) {
+    if ($normalize)
+    {
+        for ($i = 0; $i < $n; ++$i)
+        {
+            for ($j = 0; $j < $m; ++$j)
+            {
                 $x[$i][$j] = ($x[$i][$j] * $stddev[$j]) + $mean[$j];
             }
         }
@@ -127,6 +140,165 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
     return array($x, $iters);
 }
 
+
+/** Performs the recovery of all missing values in all time series stored in the session object.
+ * Takes stats information to do normalization during recovery.
+ * Returns TBA.
+ * @param $sessionobject : Object & | object containing all time series with their metadata
+ * @param $threshold : Double | limit of meansquarediff between iteration
+ * @return object : object | TBA
+ */
+function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
+{
+    $x = array();
+
+    $m = count($sessionobject->{"series"}[0]->{"points"});    // number of values per series: rows in the matrix
+    $n = count($sessionobject->{"series"}); // number of series
+
+    for ($j = 0; $j < $n; $j++)
+    {
+        $series = &$sessionobject->{"series"}[$j]->{"points"};
+        $col = array();
+
+        for ($i = 0; $i < $m; $i++)
+        {
+            $col[] = $series[$i][1];
+        }
+
+        $x[] = $col;
+    }
+
+    $x = RMV_all(trsp($x), $threshold, $n, false);//todo: normalize, runtime
+    $x = $x[0];
+
+    // $__recov_version
+    //   version 0 = return everything
+    //   version 1 = return only missing elements
+    //   version 2 = return missing elements +1 element before/after every block
+    //   version 3 = return missing elements +1 element before/after every block, but nullify others instead of ditching
+
+    if ($__recov_version == 0)
+    {
+        $recov_response = clone $sessionobject;
+
+        for ($j = 0; $j < $n; $j++)
+        {
+            $recov_response->{"series"}[$j] = clone $sessionobject->{"series"}[$j];
+
+            $series = &$recov_response->{"series"}[$j]->{"points"};
+            $recov_response->{"series"}[$j]->{"title"} .= " (recovery)";
+
+            for ($i = 0; $i < $m; $i++)
+            {
+                $series[$i][1] = $x[$i][$j];
+            }
+        }
+    }
+    else if ($__recov_version == 1)
+    {
+        $recov_response = new stdClass();
+        $recov_response->{"series"} = array();
+
+        for ($j = 0; $j < $n; $j++)
+        {
+            $series = &$sessionobject->{"series"}[$j];
+            $newseries = new stdClass();
+
+            $newseries->{"id"} = $sessionobject->{"series"}[$j]->{"id"};
+            $newseries->{"title"} = $sessionobject->{"series"}[$j]->{"title"} . " (recovery)";
+            $newseries->{"points"} = array();
+
+            $series = &$series->{"points"};
+
+            for ($i = 0; $i < $m; $i++)
+            {
+                if (is_null($series[$i][1]))
+                {
+                    $newseries->{"points"}[] = array($series[$i][0], $x[$i][$j]);
+                }
+            }
+
+            $recov_response->{"series"}[] = $newseries;
+        }
+    }
+    else if ($__recov_version == 2)
+    {
+        $recov_response = new stdClass();
+        $recov_response->{"series"} = array();
+
+        for ($j = 0; $j < $n; $j++)
+        {
+            $series = &$sessionobject->{"series"}[$j];
+            $newseries = new stdClass();
+
+            $newseries->{"id"} = $sessionobject->{"series"}[$j]->{"id"};
+            $newseries->{"title"} = $sessionobject->{"series"}[$j]->{"title"} . " (recovery)";
+            $newseries->{"points"} = array();
+
+            $series = &$series->{"points"};
+
+            $first_null = true;
+
+            for ($i = 0; $i < $m; $i++)
+            {
+                if (is_null($series[$i][1]))
+                {
+                    if ($first_null && $i != 0)
+                    {
+                        $newseries->{"points"}[] = array($series[$i - 1][0], $x[$i - 1][$j]);
+                        $first_null = false;
+                    }
+
+                    $newseries->{"points"}[] = array($series[$i][0], $x[$i][$j]);
+                }
+                else
+                {
+                    if (!$first_null && $i != $m - 1)
+                    {
+                        $newseries->{"points"}[] = array($series[$i][0], $x[$i][$j]);
+                    }
+                    $first_null = true;
+                }
+            }
+
+            $recov_response->{"series"}[] = $newseries;
+        }
+    }
+    else if ($__recov_version == 3)
+    {
+        $recov_response = clone $sessionobject;
+
+        for ($j = 0; $j < $n; $j++)
+        {
+            $recov_response->{"series"}[$j] = clone $sessionobject->{"series"}[$j];
+
+            $series = &$recov_response->{"series"}[$j]->{"points"};
+            $recov_response->{"series"}[$j]->{"title"} .= " (recovery)";
+            $oldseries = &$sessionobject->{"series"}[$j]->{"points"};
+
+            for ($i = 0; $i < $m; $i++)
+            {
+                if (is_null($oldseries[$i][1]))
+                {
+                    $series[$i][1] = $x[$i][$j];
+                }
+                else if ( ( ($i > 0) && is_null($oldseries[$i - 1][1]) )
+                              ||
+                          ( $i < $m - 1 && is_null($oldseries[$i + 1][1]) )
+                ) // check if next OR previous element is a null originally. additionally prevent out of bounds
+                { }
+                else
+                {
+                    $series[$i][1] = null;
+                }
+            }
+        }
+    }
+
+    //todo: insert runtime
+
+    return $recov_response;
+}
 
 /** Performs the recovery of missing values on input X, missing values can be present in all series.
  *  Recovery is performed until threshold of mean square different is reached or 100 iterations.
@@ -145,20 +317,25 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
 
     // write out all indexes of missing values in the base series
     $missing_value_indices = array();
-    for ($i = 0; $i < $n; $i++) {
-        for ($j = 0; $j < $m; $j++) {
-            if (is_null($x[$i][$j])) {
+    for ($i = 0; $i < $n; $i++)
+    {
+        for ($j = 0; $j < $m; $j++)
+        {
+            if (is_null($x[$i][$j]))
+            {
                 $missing_value_indices[] = array($i, $j);
             }
         }
     }
 
-    if (count($missing_value_indices) == 0) {
+    if (count($missing_value_indices) == 0)
+    {
         return array($x, 0);
     }
 
     // initialize missing values with linear interpolation (nearest neighbour for edge values)
-    for ($j = 0; $j < $m; $j++) {
+    for ($j = 0; $j < $m; $j++)
+    {
         linear_interpolated_base_series_values($x, $j);
     }
 
@@ -166,16 +343,19 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
     $r = init_array($m, $k, 0);
 
     $z_all = array();
-    for ($j = 0; $j < $k; $j++) {
+    for ($j = 0; $j < $k; $j++)
+    {
         $z = array();
-        for ($i = 0; $i < $n; $i++) {
+        for ($i = 0; $i < $n; $i++)
+        {
             $z[] = 1.0;
         }
         $z_all[] = $z;
     }
 
     // normalize
-    if ($normalize) {
+    if ($normalize)
+    {
         // normalization
         if (is_null($mean) || is_null($stddev))
         {
@@ -183,11 +363,13 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
             $stddev = init_vector($m, 0);
             //print_array_csv($mean);
             //print_array_csv($stddev);
-            getmeanstddev($x,  $mean, $stddev, $n, $m);
+            getmeanstddev($x, $mean, $stddev, $n, $m);
         }
 
-        for ($i = 0; $i < $n; ++$i) {
-            for ($j = 0; $j < $m; ++$j) {
+        for ($i = 0; $i < $n; ++$i)
+        {
+            for ($j = 0; $j < $m; ++$j)
+            {
                 $x[$i][$j] = ($x[$i][$j] - $mean[$j]) / $stddev[$j];
             }
         }
@@ -196,7 +378,8 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
     $diff = 99.0;
     $iters = 0;
 
-    while ($diff >= $threshold && $iters < 100) {
+    while ($diff >= $threshold && $iters < 100)
+    {
         cachedTCD($x, $z_all, $l, $r, $k);
 
         $x_reconstruction = matmult_A_BT($l, $r);
@@ -204,7 +387,8 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
         // update the "missing values" in X with those of x_truncated & calculate meansquarediff
         $diff = 0.0;
 
-        for ($mv = 0; $mv < count($missing_value_indices); $mv++) {
+        for ($mv = 0; $mv < count($missing_value_indices); $mv++)
+        {
             $base_series_index = $missing_value_indices[$mv][1];
             $idx = $missing_value_indices[$mv][0];
 
@@ -235,10 +419,12 @@ function CD($x)
 
     $z_all = array();
 
-    for ($j = 0; $j < $m; $j++) {
+    for ($j = 0; $j < $m; $j++)
+    {
         $z = array();
 
-        for ($i = 0; $i < $n; $i++) {
+        for ($i = 0; $i < $n; $i++)
+        {
             $z[] = 1.0;
         }
 
@@ -273,7 +459,8 @@ function cachedTCD($x, &$z_all, &$l, &$r, $truncation)
     $s = init_array($m, 1, 0);
     $v = init_array($n, 1, 0);
 
-    for ($col = 0; $col < $truncation; $col++) {
+    for ($col = 0; $col < $truncation; $col++)
+    {
         // fetch z to pass inside ISSV+
         $z = $z_all[$col];
         //incremental_scalable_sign_vector_plus($x, $n, $m, $s, $v, $z);
@@ -281,9 +468,11 @@ function cachedTCD($x, &$z_all, &$l, &$r, $truncation)
         $z_all[$col] = $z;
 
         $sum_squared = 0;
-        for ($j = 0; $j < $m; $j++) {
+        for ($j = 0; $j < $m; $j++)
+        {
             $tmp = 0;
-            for ($i = 0; $i < $n; $i++) {
+            for ($i = 0; $i < $n; $i++)
+            {
                 $tmp += $x[$i][$j] * $z[$i];
             }
             $c_column[$j] = $tmp;
@@ -292,19 +481,24 @@ function cachedTCD($x, &$z_all, &$l, &$r, $truncation)
 
         $sum_squared = sqrt($sum_squared);
 
-        for ($j = 0; $j < $m; $j++) {
+        for ($j = 0; $j < $m; $j++)
+        {
             $r[$j][$col] = $c_column[$j] / $sum_squared;
         }
 
-        for ($i = 0; $i < $n; $i++) {
+        for ($i = 0; $i < $n; $i++)
+        {
             $l[$i][$col] = 0;
-            for ($j = 0; $j < $m; $j++) {
+            for ($j = 0; $j < $m; $j++)
+            {
                 $l[$i][$col] += $x[$i][$j] * $r[$j][$col];
             }
         }
 
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $m; $j++) {
+        for ($i = 0; $i < $n; $i++)
+        {
+            for ($j = 0; $j < $m; $j++)
+            {
                 $x[$i][$j] -= ($l[$i][$col] * $r[$j][$col]);
             }
         }
@@ -325,21 +519,26 @@ function cachedTCD($x, &$z_all, &$l, &$r, $truncation)
 function incremental_scalable_sign_vector_plus(&$x, $n, $m, &$s, &$v, &$z)
 {
     // determine s
-    for ($j = 0; $j < $m; $j++) {
+    for ($j = 0; $j < $m; $j++)
+    {
         $s[$j] = 0;
     }
 
-    for ($i = 0; $i < $n; $i++) {
-        for ($j = 0; $j < $m; $j++) {
+    for ($i = 0; $i < $n; $i++)
+    {
+        for ($j = 0; $j < $m; $j++)
+        {
             $s[$j] += $z[$i] * $x[$i][$j];
         }
     }
 
     // determine v
-    for ($i = 0; $i < $n; $i++) {
+    for ($i = 0; $i < $n; $i++)
+    {
         $tmp1 = 0;
         $tmp2 = 0;
-        for ($j = 0; $j < $m; $j++) {
+        for ($j = 0; $j < $m; $j++)
+        {
             $tmp1 += $z[$i] * ($x[$i][$j] * $s[$j]);
             $tmp2 += $x[$i][$j] * $x[$i][$j];
         }
@@ -350,22 +549,29 @@ function incremental_scalable_sign_vector_plus(&$x, $n, $m, &$s, &$v, &$z)
     $pos = -1;
     $val = 1E-10;
 
-    for ($i = 0; $i < $n; $i++) {
-        if ($z[$i] * $v[$i] < 0) {
-            if (abs($v[$i]) > $val) {
+    for ($i = 0; $i < $n; $i++)
+    {
+        if ($z[$i] * $v[$i] < 0)
+        {
+            if (abs($v[$i]) > $val)
+            {
                 $val = abs($v[$i]);
                 $pos = $i;
             }
         }
     }
 
-    while ($pos != -1) {
+    while ($pos != -1)
+    {
         $val = 1E-10;
         $pos = -1;
 
-        for ($i = 0; $i < $n; $i++) {
-            if ($z[$i] * $v[$i] < 0) {
-                if (abs($v[$i]) > $val) {
+        for ($i = 0; $i < $n; $i++)
+        {
+            if ($z[$i] * $v[$i] < 0)
+            {
+                if (abs($v[$i]) > $val)
+                {
                     $val = abs($v[$i]);
                     $pos = $i;
 
@@ -378,12 +584,15 @@ function incremental_scalable_sign_vector_plus(&$x, $n, $m, &$s, &$v, &$z)
                     $factor = $z[$pos] + $z[$pos];
 
                     // update V
-                    for ($l = 0; $l < $n; $l++) {
-                        if ($l != $pos) {
+                    for ($l = 0; $l < $n; $l++)
+                    {
+                        if ($l != $pos)
+                        {
                             // = <x_l, x_pos>
                             $dot_xl_xpos = 0.0;
 
-                            for ($k = 0; $k < $m; $k++) {
+                            for ($k = 0; $k < $m; $k++)
+                            {
                                 $dot_xl_xpos += $x[$l][$k] * $x[$pos][$k];
                             }
 
@@ -465,33 +674,41 @@ function linear_interpolated_base_series_values(&$matrix, $base_series_index)
     $prev_value = NULL;
     $step = 0;//init
 
-    for ($i = 0; $i < $rows; $i++) {
-        if (is_null($matrix[$i][$base_series_index])) {
+    for ($i = 0; $i < $rows; $i++)
+    {
+        if (is_null($matrix[$i][$base_series_index]))
+        {
             // current value is missing - we either start a new block, or we are in the middle of one
 
-            if ($mb_start == -1) { // new missing block
+            if ($mb_start == -1)
+            { // new missing block
                 $mb_start = $i;
                 $mb_end = $mb_start + 1;
 
                 //lookahead to find the end
                 // INDEX IS NEXT NON-NULL ELEMENT, NOT THE LAST NULL
                 // INCLUDING OUT OF BOUNDS IF THE BLOCK ENDS AT THE END OF TS
-                while (($mb_end < $rows) && is_null($matrix[$mb_end][$base_series_index])) {
+                while (($mb_end < $rows) && is_null($matrix[$mb_end][$base_series_index]))
+                {
                     $mb_end++;
                 }
 
                 $next_value = $mb_end == $rows ? NULL : $matrix[$mb_end][$base_series_index];
 
-                if ($mb_start == 0) { // special case #1: block starts with array
+                if ($mb_start == 0)
+                { // special case #1: block starts with array
                     $prev_value = $next_value;
                 }
-                if ($mb_end == $rows) { // special case #2: block ends with array
+                if ($mb_end == $rows)
+                { // special case #2: block ends with array
                     $next_value = $prev_value;
                 }
                 $step = ($next_value - $prev_value) / ($mb_end - $mb_start + 1);
             }
             $matrix[$i][$base_series_index] = $prev_value + $step * ($i - $mb_start + 1);
-        } else {
+        }
+        else
+        {
             // missing block either ended just new or we're traversing normal data
             $prev_value = $matrix[$i][$base_series_index];
             $mb_start = -1;
@@ -511,8 +728,10 @@ function getmeanstddev(&$x, &$mean, &$stddev, $n, $m)
 {
     $count = init_vector($m);
 
-    for ($i = 0; $i < $n; ++$i) {
-        for ($j = 0; $j < $m; ++$j) {
+    for ($i = 0; $i < $n; ++$i)
+    {
+        for ($j = 0; $j < $m; ++$j)
+        {
             $entry = $x[$i][$j];
             if (!is_null($entry))
             {
@@ -523,7 +742,8 @@ function getmeanstddev(&$x, &$mean, &$stddev, $n, $m)
         }
     }
 
-    for ($j = 0; $j < $m; ++$j) {
+    for ($j = 0; $j < $m; ++$j)
+    {
         $stddev[$j] -= ($mean[$j] * $mean[$j]) / $count[$j];
         $stddev[$j] /= $count[$j] - 1;
         $stddev[$j] = sqrt($stddev[$j]);
@@ -546,8 +766,10 @@ function rootmeansquare_distance(&$a, &$b, $n)
     $columns = count($a[0]);
     $diff = 0;
 
-    for ($row_index = 0; $row_index < $rows; $row_index++) {
-        for ($column_index = 0; $column_index < $columns; $column_index++) {
+    for ($row_index = 0; $row_index < $rows; $row_index++)
+    {
+        for ($column_index = 0; $column_index < $columns; $column_index++)
+        {
             $diff += pow(($a[$row_index][$column_index] - $b[$row_index][$column_index]), 2);
         }
     }
@@ -568,8 +790,10 @@ function trsp($array)
 
     $tp = init_array($cols, $rows);
 
-    for ($i = 0; $i < $rows; $i++) {
-        for ($j = 0; $j < $cols; $j++) {
+    for ($i = 0; $i < $rows; $i++)
+    {
+        for ($j = 0; $j < $cols; $j++)
+        {
             $tp[$j][$i] = $array[$i][$j];
         }
     }
@@ -594,11 +818,14 @@ function matmult(&$mat1, &$mat2)
 
     $res = init_array($n1, $m2);
 
-    for ($i = 0; $i < $n1; $i++) {
-        for ($j = 0; $j < $m2; $j++) {
+    for ($i = 0; $i < $n1; $i++)
+    {
+        for ($j = 0; $j < $m2; $j++)
+        {
             $temp = 0.0;
 
-            for ($k = 0; $k < $n2; $k++) {
+            for ($k = 0; $k < $n2; $k++)
+            {
                 $temp += $mat1[$i][$k] * $mat2[$k][$j];
             }
 
@@ -626,11 +853,14 @@ function matmult_AT_B(&$mat1, &$mat2)
 
     $res = init_array($m1, $m2);
 
-    for ($i = 0; $i < $m1; $i++) {
-        for ($j = 0; $j < $m2; $j++) {
+    for ($i = 0; $i < $m1; $i++)
+    {
+        for ($j = 0; $j < $m2; $j++)
+        {
             $temp = 0.0;
 
-            for ($k = 0; $k < $n2; $k++) {
+            for ($k = 0; $k < $n2; $k++)
+            {
                 $temp += $mat1[$k][$i] * $mat2[$k][$j];
             }
 
@@ -658,11 +888,14 @@ function matmult_A_BT(&$mat1, &$mat2)
 
     $res = init_array($n1, $n2);
 
-    for ($i = 0; $i < $n1; $i++) {
-        for ($j = 0; $j < $n2; $j++) {
+    for ($i = 0; $i < $n1; $i++)
+    {
+        for ($j = 0; $j < $n2; $j++)
+        {
             $temp = 0.0;
 
-            for ($k = 0; $k < $m2; $k++) {
+            for ($k = 0; $k < $m2; $k++)
+            {
                 $temp += $mat1[$i][$k] * $mat2[$j][$k];
             }
 
@@ -684,7 +917,8 @@ function vecToMatrix(&$vec)
 
     $res = array();
 
-    for ($i = 0; $i < $n; $i++) {
+    for ($i = 0; $i < $n; $i++)
+    {
         $res[] = array($vec[$i]);
     }
 
@@ -707,10 +941,14 @@ function vecToMatrix(&$vec)
 function init_vector($rows, $initwith = NULL)
 {
     $array = array();
-    if ($rows == 1) {
+    if ($rows == 1)
+    {
         return $initwith;
-    } else {
-        for ($i = 0; $i < $rows; $i++) {
+    }
+    else
+    {
+        for ($i = 0; $i < $rows; $i++)
+        {
             $array[] = $initwith;
         }
     }
@@ -728,23 +966,35 @@ function init_vector($rows, $initwith = NULL)
 function init_array($rows, $columns, $initwith = NULL)
 {
     $array = array();
-    if ($rows == 1) {
-        if ($columns == 1) {
+    if ($rows == 1)
+    {
+        if ($columns == 1)
+        {
             return $initwith;
-        } else {
+        }
+        else
+        {
             $array[] = array();
-            for ($column_index = 0; $column_index < $columns; $column_index++) {
+            for ($column_index = 0; $column_index < $columns; $column_index++)
+            {
                 $array[0][] = $initwith;
             }
         }
-    } elseif ($columns == 1) {
-        for ($row_index = 0; $row_index < $rows; $row_index++) {
+    }
+    elseif ($columns == 1)
+    {
+        for ($row_index = 0; $row_index < $rows; $row_index++)
+        {
             $array[] = array($initwith);
         }
-    } else {
-        for ($row_index = 0; $row_index < $rows; $row_index++) {
+    }
+    else
+    {
+        for ($row_index = 0; $row_index < $rows; $row_index++)
+        {
             $tmp_array = array();
-            for ($column_index = 0; $column_index < $columns; $column_index++) {
+            for ($column_index = 0; $column_index < $columns; $column_index++)
+            {
                 $tmp_array[] = $initwith;
             }
             $array[] = $tmp_array;
@@ -767,12 +1017,17 @@ function print_array(&$array, $name)
 
     echo "<h3>$name :</h3>";
     echo "<table>";
-    for ($row_index = 0; $row_index < $rows; $row_index++) {
+    for ($row_index = 0; $row_index < $rows; $row_index++)
+    {
         echo "<tr>";
-        if ($columns == 1) {
+        if ($columns == 1)
+        {
             echo "<td>" . round($array[$row_index], 3) . "</td>";
-        } else {
-            for ($column_index = 0; $column_index < $columns; $column_index++) {
+        }
+        else
+        {
+            for ($column_index = 0; $column_index < $columns; $column_index++)
+            {
                 echo "<td>" . round($array[$row_index][$column_index], 3) . "</td>";
             }
         }
@@ -792,11 +1047,16 @@ function print_array_pre(&$array)
     $rows = count($array);
     $columns = count($array[0]);
 
-    for ($i = 0; $i < $rows; $i++) {
-        for ($j = 0; $j < $columns; $j++) {
-            if (is_null($array[$i][$j])) {
+    for ($i = 0; $i < $rows; $i++)
+    {
+        for ($j = 0; $j < $columns; $j++)
+        {
+            if (is_null($array[$i][$j]))
+            {
                 echo " " . "NaN" . "\t";
-            } else {
+            }
+            else
+            {
                 echo ($array[$i][$j] >= 0 ? " " : "") . round($array[$i][$j], 2) . "\t";
             }
         }
@@ -813,7 +1073,8 @@ function print_array_pre(&$array)
  */
 function print_pre_headers($name, $columns)
 {
-    for ($column_index = 0; $column_index < $columns; $column_index++) {
+    for ($column_index = 0; $column_index < $columns; $column_index++)
+    {
         echo "$name" . "[$column_index]\t";
     }
     echo "\n";
@@ -835,11 +1096,15 @@ function print_array_color(&$array, $name)
     echo "<table>";
     echo "<tr>";
 
-    for ($row_index = 0; $row_index < $rows; $row_index++) {
+    for ($row_index = 0; $row_index < $rows; $row_index++)
+    {
         //for ($column_index=0; $column_index<$columns; $column_index++){
-        if ($array[$row_index] == 1) {
+        if ($array[$row_index] == 1)
+        {
             echo "<td style='color: blue;'>||||||</td>";
-        } else {
+        }
+        else
+        {
             echo "<td style='color: red;'>||||||</td>";
         }
         //}
@@ -860,8 +1125,10 @@ function print_array_csv(&$array)
     $rows = count($array);
     $columns = count($array[0]);
 
-    for ($row_index = 0; $row_index < $rows; $row_index++) {
-        for ($column_index = 0; $column_index < $columns - 1; $column_index++) {
+    for ($row_index = 0; $row_index < $rows; $row_index++)
+    {
+        for ($column_index = 0; $column_index < $columns - 1; $column_index++)
+        {
             echo round($array[$row_index][$column_index], 2) . ",";
         }
         echo round($array[$row_index][$columns - 1], 2) . "\n";
@@ -887,8 +1154,10 @@ function frobenius_distance($a, $b)
     $rows = count($a);
     $columns = count($a[0]);
     $diff = 0;
-    for ($row_index = 0; $row_index < $rows; $row_index++) {
-        for ($column_index = 0; $column_index < $columns; $column_index++) {
+    for ($row_index = 0; $row_index < $rows; $row_index++)
+    {
+        for ($column_index = 0; $column_index < $columns; $column_index++)
+        {
             $diff += pow(($a[$row_index][$column_index] - $b[$row_index][$column_index]), 2);
         }
     }
