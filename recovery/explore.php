@@ -225,12 +225,12 @@ include '../header.php';
                     </select>
                     <!-- <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3"> -->
                 </div>
-                <div id="ground" class="form-group hidden">
+                <!-- <div id="ground" class="form-group hidden">
                     <label for="groundTruth">
                         <input id="groundTruth" type="checkbox" checked name="groundTruth">
-                        <span> Ground Truth</span>
+                        <span> Show Ground Truth</span>
                     </label>
-                </div>
+                </div> -->
                 <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
                 <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
@@ -298,12 +298,12 @@ include '../header.php';
 
         function showRecover() {
             $('#recoverBtn').removeClass('hidden');
-            $('#ground').removeClass('hidden');
+            // $('#ground').removeClass('hidden');
         }
 
         function hideRecover() {
             $('#recoverBtn').addClass('hidden');
-            $('#ground').addClass('hidden');
+            // $('#ground').addClass('hidden');
         }
 
         $('#retrieveForm').on('submit', function(e) {
@@ -311,16 +311,26 @@ include '../header.php';
             const form = e.target;
             const selectedOptions = form['base_serie'].selectedOptions;
             const series = Array.from(selectedOptions).map(next => parseInt(next.value, 10));
+            // const ground = form['groundTruth'].checked;
             const data = {
                 norm: store.norm,
                 start: store.min,
                 end: store.max,
                 series,
                 threshold: parseFloat(form['threshold'].value, 10),
-                ground: form['groundTruth'].checked,
                 drop: parseFloat(form['drop'].value, 10),
             };
             const url = form.action;
+            const chart = $('#container').highcharts();
+            chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
+            
+            // clean up ground lines
+            chart.series.forEach((serie, i) => {
+                if(/ground/i.test(serie.name)) {
+                    console.log(`removing ${serie.name} before rest`);
+                    chart.series[serie.index].remove();
+                }
+            });
             requestSeries(url, data)
                 .then(response => {
                     if (response.status === 200) {
@@ -330,10 +340,11 @@ include '../header.php';
                 })
                 .then((json) => {
                     console.log(json);
-                    updateSeries(json.series);
+                    redraw(json.series);
                     showRecover();
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => chart.hideLoading());
         });
 
         $(window).bind("pageshow", function () {
@@ -410,13 +421,52 @@ include '../header.php';
             }
         }
 
-        function updateSeries(series) {
+        function redraw(series) {
             const chart = $('#container').highcharts();
-            chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
-            series.forEach((serie, i) => {
-                chart.series[i].setData(serie.points);
+            // clean up old ground lines in 2 iterations ??? 
+            // because of weird Highchart behaviour
+            // obviously this is a hack 
+            chart.series.forEach((serie, i) => {
+                if(/ground/i.test(serie.name)) {
+                    console.log(`removing ${serie.name} loop 1`);
+                    chart.series[serie.index].remove();
+                }
             });
-            chart.hideLoading();
+            chart.series = chart.series.filter((serie, i) => {
+                if(/ground/i.test(serie.name)) {
+                    console.log(`removing ${serie.name} loop 2`);
+                    chart.series[serie.index].remove();
+                    return false;
+                }
+                return true;
+            });
+            /// end hack
+            series.forEach((serie, i) => {
+                if(chart.series[i]) {
+                    chart.series[i].setData(serie.points);
+                }
+            });
+           
+            const filtered = series.filter((next) => next.ground !== undefined);
+            for (const serie of filtered) {
+                const serieId = `${serie.id}-ground`;
+                const chartSerie = chart.get(serieId);
+                const data = serie.ground;
+                if (chartSerie !== undefined) {
+                    console.log(`setData ${serie.title}-ground`);
+                    chartSerie.setData(data);
+                } else {
+                    console.log(`adding ${serie.title}-ground`);
+                    chart.addSeries({
+                        id: serieId,
+                        name: `${serie.title}-ground`,
+                        color: '#999',
+                        dashStyle: 'ShortDot',
+                        data, 
+                    });
+                }
+            }
+            chart.redraw();
         }
 
         function loadChart(query) {

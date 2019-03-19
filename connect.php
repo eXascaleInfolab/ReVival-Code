@@ -66,6 +66,22 @@ function get_serie_data($conn, $table, $serie_id, $start, $end, $norm = 0) {
     return $obj;
 }
 
+function get_timestamps($conn, $table, $serie_id) {
+    $qry = "
+    select
+        sys.epoch(datetime) * 1000 as tick
+    from $table 
+    where series_id=$serie_id and datetime>=sys.epoch($start) and datetime<=sys.epoch($end)
+    ";
+    $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
+    $time_stamps = array();
+    while ( $row = monetdb_fetch_assoc($res) )
+    {
+        array_push($time_stamps, (int)$row['tick']);
+    }
+    return $time_stamps;
+}
+
 function get_statistics($conn, $table, $serie_id) {
     $qry = "
     SELECT
@@ -92,7 +108,7 @@ function get_statistics($conn, $table, $serie_id) {
     return $statistics;
 }
 
-function drop_values($conn, $table, $serie_id, $start, $end, $start_drop_ts, $end_drop_ts, $norm) {
+function get_data_out_range($conn, $table, $serie_id, $start, $end, $start_drop_ts, $end_drop_ts, $norm) {
     $qry = "
     SELECT
         sys.epoch($table.datetime) * 1000 AS datetime,
@@ -100,6 +116,49 @@ function drop_values($conn, $table, $serie_id, $start, $end, $start_drop_ts, $en
         WHEN datetime BETWEEN sys.epoch($start_drop_ts) AND sys.epoch($end_drop_ts)
             THEN NULL 
         ELSE $table.value
+        END AS value
+    FROM
+        $table
+    WHERE 
+        series_id = $serie_id AND datetime between sys.epoch($start) and sys.epoch($end)
+    ORDER BY
+        datetime
+    ";
+    $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
+    if ($norm != 0) {
+        $statistics = get_statistics($conn, $table, $serie_id);
+    }
+    $points = array();
+    while ($row = monetdb_fetch_assoc($res)) {
+        $datetime = (int)($row['datetime']);
+        $value = is_null($row['value']) ? NULL : (float)($row['value']);
+        if ($value === NULL) {
+            $points[] = array($datetime, NULL);
+        } else {
+            if ($norm === 0) {
+                $points[] = array($datetime, $value);
+            } elseif ($norm === 1) {
+                $mean = $statistics -> {'mean'};
+                $stddev = $statistics -> {'stddev'};
+                $points[] = array($datetime, ($value - $mean) / $stddev);
+            } elseif ($norm === 2) {
+                $min = $statistics -> {'min'};
+                $max = $statistics -> {'max'};
+                $points[] = array($datetime, ($value - $min) / ($max - $min));
+            }
+        }
+    }
+    return $points;
+}
+
+function get_data_in_range($conn, $table, $serie_id, $start, $end, $start_drop_ts, $end_drop_ts, $norm) {
+    $qry = "
+    SELECT
+        sys.epoch($table.datetime) * 1000 AS datetime,
+        CASE
+        WHEN datetime BETWEEN sys.epoch($start_drop_ts) AND sys.epoch($end_drop_ts)
+            THEN $table.value
+        ELSE NULL
         END AS value
     FROM
         $table

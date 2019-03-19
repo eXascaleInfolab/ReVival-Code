@@ -62,12 +62,18 @@ $response = new stdClass();
 foreach($series_ids as $key => $value) {
     $start_drop_ts = $time_stamps[$indices[$key] - $delta];
     $end_drop_ts = $time_stamps[$indices[$key] + $delta];
-    $points = drop_values($conn, $table, $value, $start, $end, $start_drop_ts, $end_drop_ts, $norm);
+    $points = get_data_out_range($conn, $table, $value, $start, $end, $start_drop_ts, $end_drop_ts, $norm);
+    $one_before = $time_stamps[$indices[$key] - $delta - 1];
+    $one_after= $time_stamps[$indices[$key] + $delta + 1];
+    $ground = get_data_in_range($conn, $table, $value, $start, $end, $one_before, $one_after, $norm);
     // loop over cashed series swap points
     foreach($explore_object->{'series'} as &$serie) {
         $s_id = (int)$serie['id'];
         if ($s_id === $value) {
             $serie['points'] = $points;
+            $serie['ground'] = $ground;
+            $serie['start_drop_ts'] = $start_drop_ts;
+            $serie['end_drop_ts'] = $end_drop_ts;
         }
     }
 }
