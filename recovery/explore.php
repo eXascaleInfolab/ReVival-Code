@@ -306,6 +306,38 @@ include '../header.php';
             // $('#ground').addClass('hidden');
         }
 
+        function removeGroundLines() {
+            const chart = $('#container').highcharts();
+            // clean up old ground lines in 2 iterations ??? 
+            // because of weird Highchart behaviour
+            // obviously this is a hack 
+            console.log('---------------');
+            console.log('BEFORE remove');
+            for (const serie of chart.series) {
+                console.log(serie.name);
+            }
+            chart.series.forEach((serie, i) => {
+                if(/ground/i.test(serie.name)) {
+                    console.log(`removing ${serie.name} loop 1`);
+                    chart.series[serie.index].remove();
+                }
+            });
+            chart.series = chart.series.filter((serie, i) => {
+                if(/ground/i.test(serie.name)) {
+                    console.log(`removing ${serie.name} loop 2`);
+                    chart.series[serie.index].remove();
+                    return false;
+                }
+                return true;
+            });
+            console.log('AFTER remove');
+            for (const serie of chart.series) {
+                console.log(serie.name);
+            }
+            console.log('---------------');
+            chart.redraw();
+        }
+
         $('#retrieveForm').on('submit', function(e) {
             e.preventDefault();
             const form = e.target;
@@ -323,14 +355,6 @@ include '../header.php';
             const url = form.action;
             const chart = $('#container').highcharts();
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
-            
-            // clean up ground lines
-            chart.series.forEach((serie, i) => {
-                if(/ground/i.test(serie.name)) {
-                    console.log(`removing ${serie.name} before rest`);
-                    chart.series[serie.index].remove();
-                }
-            });
             requestSeries(url, data)
                 .then(response => {
                     if (response.status === 200) {
@@ -423,24 +447,7 @@ include '../header.php';
 
         function redraw(series) {
             const chart = $('#container').highcharts();
-            // clean up old ground lines in 2 iterations ??? 
-            // because of weird Highchart behaviour
-            // obviously this is a hack 
-            chart.series.forEach((serie, i) => {
-                if(/ground/i.test(serie.name)) {
-                    console.log(`removing ${serie.name} loop 1`);
-                    chart.series[serie.index].remove();
-                }
-            });
-            chart.series = chart.series.filter((serie, i) => {
-                if(/ground/i.test(serie.name)) {
-                    console.log(`removing ${serie.name} loop 2`);
-                    chart.series[serie.index].remove();
-                    return false;
-                }
-                return true;
-            });
-            /// end hack
+            removeGroundLines();
             series.forEach((serie, i) => {
                 if(chart.series[i]) {
                     chart.series[i].setData(serie.points);
@@ -457,16 +464,16 @@ include '../header.php';
                     chartSerie.setData(data);
                 } else {
                     console.log(`adding ${serie.title}-ground`);
+                    const color = chart.get(parseInt(serie.id, 10)).color; // maintain color
                     chart.addSeries({
                         id: serieId,
                         name: `${serie.title}-ground`,
-                        color: '#999',
+                        color,
                         dashStyle: 'ShortDot',
                         data, 
                     });
                 }
             }
-            chart.redraw();
         }
 
         function loadChart(query) {
@@ -516,6 +523,7 @@ include '../header.php';
                 min,
                 max,
             };
+            removeGroundLines();
             reloadChartWithExtremes(min, max);
         }
 
