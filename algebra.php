@@ -143,12 +143,14 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
 
 /** Performs the recovery of all missing values in all time series stored in the session object.
  * Takes stats information to do normalization during recovery.
- * Returns TBA.
- * @param $sessionobject : Object & | object containing all time series with their metadata
+ * Returns recovery and its technical data (#iters, recovery runtime).
+ * @param $conn : Object | monetdb connection object
+ * @param $sessionobject : Object | object containing all time series with their metadata
  * @param $threshold : Double | limit of meansquarediff between iteration
- * @return object : object | TBA
+ * @param $normtype : int | 0 to indicate the data is not normalized
+ * @return object : object | same structure as session object, but adapted to visualise it in the chart
  */
-function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
+function recover_all($conn, $sessionobject, $threshold, $normtype, $__recov_version = 4)
 {
     $x = array();
 
@@ -157,18 +159,39 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
 
     for ($j = 0; $j < $n; $j++)
     {
-        $series = &$sessionobject->{"series"}[$j]->{"points"};
         $col = array();
 
         for ($i = 0; $i < $m; $i++)
         {
-            $col[] = $series[$i][1];
+            $col[] = $sessionobject->{"series"}[$j]->{"points"}[$i][1];
         }
 
         $x[] = $col;
     }
 
-    $x = RMV_all(trsp($x), $threshold, $n, false);//todo: normalize, runtime
+
+    if ($normtype == 0 && !is_null($conn))
+    {
+        $mean = array();
+        $stddev = array();
+
+        for ($j = 0; $j < $n; $j++)
+        {
+            $stat = get_statistics($conn, "hourly", $sessionobject->{"series"}[$j]->{"id"});
+            $mean[] = $stat->{"mean"};
+            $stddev[] = $stat->{"stddev"};
+        }
+
+        $start_compute = microtime(true);
+        $x = RMV_all(trsp($x), $threshold, $n, true, $mean, $stddev);
+    }
+    else
+    {
+        $start_compute = microtime(true);
+        $x = RMV_all(trsp($x), $threshold, $n, false);
+    }
+    $time_elapsed = (microtime(true) - $start_compute) * 1000;
+    $iter = $x[1];
     $x = $x[0];
 
     // $__recov_version
@@ -176,17 +199,17 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
     //   version 1 = return only missing elements
     //   version 2 = return missing elements +1 element before/after every block
     //   version 3 = return missing elements +1 element before/after every block, but nullify others instead of ditching
+    //   version 4 = is == v3, but copies instead of cloning
 
-    if ($__recov_version == 0)
+    if ($__recov_version === 0)
     {
         $recov_response = clone $sessionobject;
 
         for ($j = 0; $j < $n; $j++)
         {
             $recov_response->{"series"}[$j] = clone $sessionobject->{"series"}[$j];
-
+            $recov_response->{"series"}[$j]->{"title"} = $sessionobject->{"series"}[$j]->{"title"} . " (recovery)";
             $series = &$recov_response->{"series"}[$j]->{"points"};
-            $recov_response->{"series"}[$j]->{"title"} .= " (recovery)";
 
             for ($i = 0; $i < $m; $i++)
             {
@@ -194,7 +217,7 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
             }
         }
     }
-    else if ($__recov_version == 1)
+    else if ($__recov_version === 1)
     {
         $recov_response = new stdClass();
         $recov_response->{"series"} = array();
@@ -204,8 +227,8 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
             $series = &$sessionobject->{"series"}[$j];
             $newseries = new stdClass();
 
-            $newseries->{"id"} = $sessionobject->{"series"}[$j]->{"id"};
-            $newseries->{"title"} = $sessionobject->{"series"}[$j]->{"title"} . " (recovery)";
+            $newseries->{"id"} = $series->{"id"};
+            $newseries->{"title"} = $series->{"title"} . " (recovery)";
             $newseries->{"points"} = array();
 
             $series = &$series->{"points"};
@@ -221,7 +244,7 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
             $recov_response->{"series"}[] = $newseries;
         }
     }
-    else if ($__recov_version == 2)
+    else if ($__recov_version === 2)
     {
         $recov_response = new stdClass();
         $recov_response->{"series"} = array();
@@ -264,16 +287,18 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
             $recov_response->{"series"}[] = $newseries;
         }
     }
-    else if ($__recov_version == 3)
+    else if ($__recov_version === 3)
     {
+        var_dump($sessionobject);
+
         $recov_response = clone $sessionobject;
 
         for ($j = 0; $j < $n; $j++)
         {
             $recov_response->{"series"}[$j] = clone $sessionobject->{"series"}[$j];
+            $recov_response->{"series"}[$j]->{"title"} .= " (recovery)";
 
             $series = &$recov_response->{"series"}[$j]->{"points"};
-            $recov_response->{"series"}[$j]->{"title"} .= " (recovery)";
             $oldseries = &$sessionobject->{"series"}[$j]->{"points"};
 
             for ($i = 0; $i < $m; $i++)
@@ -294,8 +319,53 @@ function recover_all(&$sessionobject, $threshold, $__recov_version = 0)
             }
         }
     }
+    else if ($__recov_version === 4)
+    {
+        $recov_response = new stdClass();
+        $recov_response->{"series"} = array();
 
-    //todo: insert runtime
+        for ($j = 0; $j < $n; $j++)
+        {
+            $newseries = new stdClass();
+            $newseries->{"id"} = $sessionobject->{"series"}[$j]->{"id"};
+            $newseries->{"title"} = $sessionobject->{"series"}[$j]->{"title"} . " (recovery)";
+            $recov_response->{"series"}[] = $newseries;
+
+            $oldseries = $sessionobject->{"series"}[$j]->{"points"};
+            $series = array();
+
+            for ($i = 0; $i < $m; $i++)
+            {
+                $series[] = array($oldseries[0], $oldseries[1]);
+            }
+
+            $recov_response->{"series"}[$j]->{"points"} = $series;
+
+            for ($i = 0; $i < $m; $i++)
+            {
+                if (is_null($oldseries[$i][1]))
+                {
+                    $series[$i][1] = $x[$i][$j];
+                }
+                else if ( ( ($i > 0) && is_null($oldseries[$i - 1][1]) )
+                              ||
+                          ( ($i < $m - 1) && is_null($oldseries[$i + 1][1]) )
+                ) // check if next OR previous element is a null originally. additionally prevent out of bounds
+                { }
+                else
+                {
+                    $series[$i][1] = null;
+                }
+            }
+        }
+    }
+    else
+    {
+        trigger_error("Incorrect value ($__recov_version) passed for __recov_version in recover_all. Returned object will be empty.");
+    }
+
+    $recov_response->{"runtime"} = $time_elapsed;
+    $recov_response->{"iterations"} = $iter;
 
     return $recov_response;
 }

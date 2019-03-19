@@ -185,26 +185,7 @@ class RecoveryTest extends TestCase {
 
     public function testRecovery() {
         $sample = $this->generatePartialSample();
-
-        //echo json_encode($sample);
-
-        $retval = recover_all($sample, 0.0001, 0);
-
-        $this->assertTrue(count($retval->{"series"}[0]->{"points"}) == 15);
-        $this->assertTrue(count($retval->{"series"}[2]->{"points"}) == 15);
-
-        $retval = recover_all($sample, 0.0001, 1);
-
-        $this->assertTrue(count($retval->{"series"}[0]->{"points"}) == 3);
-        $this->assertTrue(count($retval->{"series"}[2]->{"points"}) == 3);
-
-        $retval = recover_all($sample, 0.0001, 2);
-
-        $this->assertTrue(count($retval->{"series"}[0]->{"points"}) == 5);
-        $this->assertTrue(count($retval->{"series"}[2]->{"points"}) == 5);
-
-        $retval = recover_all($sample, 0.0001, 3);
-
+        $retval = recover_all(null, $sample, 0.0001, 0, 4);
         $this->assertTrue(count($retval->{"series"}[0]->{"points"}) == 15);
         $this->assertTrue(count($retval->{"series"}[2]->{"points"}) == 15);
     }
