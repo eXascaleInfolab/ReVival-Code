@@ -170,7 +170,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $__recov_vers
     }
 
 
-    if ($normtype == 0 && !is_null($conn)) //todo: make sure it's correct
+    if ($normtype == 0 && !is_null($conn))
     {
         $mean = array();
         $stddev = array();
