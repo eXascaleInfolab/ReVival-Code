@@ -17,9 +17,10 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 $raw_input = file_get_contents('php://input');
 $json = json_decode($raw_input);
 // request params
-$start = $json -> {'start'};
-$end = $json -> {'end'};
+$start = (int)$json -> {'start'};
+$end = (int)$json -> {'end'};
 $norm = (int)$json -> {'norm'};
+$ground_thruth = (bool)$json -> {'ground'};
 $threshold = (float)$json -> {'threshold'};
 $series_ids = $json -> {'series'};
 
