@@ -9,8 +9,8 @@
 namespace ReVival\Test;
 
 require dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR .'autoload.php';
-include '../algebra.php';
-include '../connect.php';
+include_once '../algebra.php';
+include_once '../connect.php';
 
 use PHPUnit\Framework\TestCase;
 use ReVival\utils;
