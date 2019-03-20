@@ -223,7 +223,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
 
         for ($i = 0; $i < $m; $i++)
         {
-            $newpoints[] = array($oldseries[0], $oldseries[1]);
+            $newpoints[] = $oldseries[$i];
         }
 
         for ($i = 0; $i < $m; $i++)
@@ -243,7 +243,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
             }
         }
 
-        $recov_response->{"series"}[$j]["points"] = $newpoints;
+        $recov_response->{"series"}[$j]["recovered"] = $newpoints;
     }
 
 
