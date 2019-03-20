@@ -233,13 +233,25 @@ include '../header.php';
                 </div> -->
                 <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
                 <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
-                <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
-                <input
-                    id="recoverBtn"
-                    type="submit"
-                    formaction="/api/recover.php"
-                    value="Recover" class="btn btn-default pull-right hidden"
-                />
+                <footer>
+                    <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
+                    <input
+                        id="recoverBtn"
+                        type="submit"
+                        formaction="/api/recover.php"
+                        value="Recover" class="btn btn-default pull-right hidden"
+                    />
+                    <div id='metrics' class="hidden">
+                        <label for="">
+                            runtime:
+                            <span id="runtime"> </span>
+                        </label>
+                        <label for="">
+                            rmse:
+                            <span id="rmse"></span>
+                        </label>
+                    </div>
+                </footer>
             </form>
         </div>
     </div>
@@ -298,12 +310,11 @@ include '../header.php';
 
         function showRecover() {
             $('#recoverBtn').removeClass('hidden');
-            // $('#ground').removeClass('hidden');
         }
 
         function hideRecover() {
             $('#recoverBtn').addClass('hidden');
-            // $('#ground').addClass('hidden');
+            $('#metrics').addClass('hidden');
         }
 
         function removeComputedLines() {
@@ -346,7 +357,8 @@ include '../header.php';
                 })
                 .then((json) => {
                     console.log(json);
-                    redraw(json.series);
+                    removeComputedLines();
+                    redraw(json.series, json.rmse, json.runtime);
                     showRecover();
                 })
                 .catch(err => console.error(err))
@@ -430,9 +442,8 @@ include '../header.php';
             }
         }
 
-        function redraw(series) {
+        function redraw(series, rmse=null, runtime=null) {
             const chart = $('#container').highcharts();
-            removeComputedLines();
             series.forEach((serie, i) => {
                 if(chart.series[i]) {
                     chart.series[i].setData(serie.points);
@@ -442,7 +453,12 @@ include '../header.php';
             const dropped = series.filter((next) => next.ground !== undefined);
             for (const serie of dropped) {
                 const serieId = `${serie.id}-ground`;
-                const chartSerie = chart.get(serieId);
+                let chartSerie;
+                try {
+                    chartSerie = chart.get(serieId);
+                } catch (err) {
+                   console.error(err);
+                }
                 const data = serie.ground;
                 if (chartSerie !== undefined) {
                     console.log(`setData ${serie.title}-ground`);
@@ -459,10 +475,15 @@ include '../header.php';
                     });
                 }
             }
-            const recovered = series.filter((next) => next.recovered !== undefined);
+            const recovered = series.filter((next) => next.recovered !== undefined && next.ground !== undefined);
             for (const serie of recovered) {
                 const serieId = `${serie.id}-recovered`;
-                const chartSerie = chart.get(serieId);
+                let chartSerie;
+                try {
+                    chartSerie = chart.get(serieId);
+                } catch (err) {
+                   console.error(err);
+                }
                 const data = serie.recovered;
                 if (chartSerie !== undefined) {
                     console.log(`setData ${serie.title}-recovered`);
@@ -478,6 +499,11 @@ include '../header.php';
                         data, 
                     });
                 }
+            }
+            if (rmse && runtime) {
+                $('#metrics').removeClass('hidden')
+                $('#rmse').text(rmse);
+                $('#runtime').text(runtime);
             }
         }
 
