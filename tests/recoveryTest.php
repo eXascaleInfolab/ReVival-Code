@@ -10,6 +10,7 @@ namespace ReVival\Test;
 
 require dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR .'autoload.php';
 include '../algebra.php';
+include '../connect.php';
 
 use PHPUnit\Framework\TestCase;
 use ReVival\utils;
@@ -229,6 +230,18 @@ class RecoveryTest extends TestCase {
         //var_dump($retval->{"series"});
         //var_dump($retval->{"series"}[0]);
     }
+
+    public function testRecoveryC($conn) {
+        $sample = $this->generatePartialSample();
+        $retval = recover_all($conn, $sample, 0.0001, 0);
+        $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
+        $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
+
+        //var_dump($retval);
+        //var_dump($retval->{"series"});
+        //var_dump($retval->{"series"}[0]);
+    }
 }
+//(new RecoveryTest())->testRecoveryC($conn);
 //(new RecoveryTest())->testRecovery();
 ?>
