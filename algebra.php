@@ -6,6 +6,8 @@
  * Time: 10:57
  */
 
+include 'src/utils.php';
+
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //                        Algebra core functions                            //
@@ -199,6 +201,10 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
     $x = $x[0];
 
     $RMSE = 0.0;
+    $RMSE_norm = 0.0;
+    $MAE = 0.0;
+    $MAE_norm = 0.0;
+    $counter = 0;
     for ($j = 0; $j < $n; $j++)
     {
         for ($i = 0; $i < $m; $i++)
@@ -209,6 +215,15 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
                 $delta = $x[$i][$j] - $gr;
 
                 $RMSE += $delta * $delta;
+                $MAE += abs($delta);
+
+                if ($normtype == 0 && !is_null($conn))
+                {
+                    $RMSE_norm += ($delta * $delta) / ($stddev[$j] * $stddev[$j]);
+                    $MAE_norm += abs($delta) / $stddev[$j];
+                }
+
+                $counter++;
             }
         }
     }
@@ -257,9 +272,20 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
         $recov_response->{"series"}[] = $newseries;
     }
 
-
     $recov_response->{"runtime"} = $time_elapsed;
-    $recov_response->{"rmse"} = sqrt($RMSE);
+    if ($normtype == 0 && !is_null($conn))
+    {
+        $recov_response->{"rmse"} = sqrt($RMSE / $counter);
+        $recov_response->{"mae"} = $MAE / $counter;
+
+        $recov_response->{"rmse_norm"} = sqrt($RMSE_norm / $counter);
+        $recov_response->{"mae_norm"} = $MAE_norm / $counter;
+    }
+    else
+    {
+        $recov_response->{"rmse_norm"} = sqrt($RMSE / $counter);
+        $recov_response->{"mae_norm"} = $MAE / $counter;
+    }
 
     return $recov_response;
 }
