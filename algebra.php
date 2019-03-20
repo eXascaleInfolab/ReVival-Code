@@ -220,7 +220,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
     {
         if (!isset($sessionobject->{"series"}[$j]["ground"]))
         {
-            continue;
+            //continue;
         }
 
         $newseries = array();
