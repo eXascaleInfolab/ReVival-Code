@@ -308,33 +308,20 @@ include '../header.php';
 
         function removeGroundLines() {
             const chart = $('#container').highcharts();
-            // clean up old ground lines in 2 iterations ??? 
-            // because of weird Highchart behaviour
-            // obviously this is a hack 
-            console.log('---------------');
-            console.log('BEFORE remove');
-            for (const serie of chart.series) {
-                console.log(serie.name);
-            }
-            chart.series.forEach((serie, i) => {
+            // Important! separate the ones to be deleted
+            // https://stackoverflow.com/questions/6604291/proper-way-to-remove-all-series-data-from-a-highcharts-chart
+            const toBeRemoved = chart.series.filter((serie, i) => {
                 if(/ground/i.test(serie.name)) {
+                    return true;
+                }
+                return false;
+            });
+            toBeRemoved.forEach((serie) => {
+                if (serie !== undefined) {
                     console.log(`removing ${serie.name} loop 1`);
-                    chart.series[serie.index].remove();
+                    serie.remove();
                 }
             });
-            chart.series = chart.series.filter((serie, i) => {
-                if(/ground/i.test(serie.name)) {
-                    console.log(`removing ${serie.name} loop 2`);
-                    chart.series[serie.index].remove();
-                    return false;
-                }
-                return true;
-            });
-            console.log('AFTER remove');
-            for (const serie of chart.series) {
-                console.log(serie.name);
-            }
-            console.log('---------------');
             chart.redraw();
         }
 

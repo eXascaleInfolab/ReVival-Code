@@ -58,7 +58,6 @@ $indices = Utils::partition($start_index, $end_index, count($series_ids) - 1);
 
 $explore_object = clone $_SESSION['series'];
 
-$response = new stdClass();
 foreach($series_ids as $key => $value) {
     $start_drop_ts = $time_stamps[$indices[$key] - $delta];
     $end_drop_ts = $time_stamps[$indices[$key] + $delta];
