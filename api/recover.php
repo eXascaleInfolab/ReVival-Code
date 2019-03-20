@@ -27,11 +27,15 @@ $series_ids = $json -> {'series'};
 // has the cached series with drop values from /api/drop.php
 $explore_object = clone $_SESSION['drop'];
 
+include '../algebra.php';
+
+$recovered = recover_all($conn, $explore_object, $threshold, $norm);
+
 // $data = get_serie_data($conn, $table, $series_ids[0], $start, $end, 1);
 // var_dump($data);
 http_response_code(200);
 // echo json_encode($explore_object);
-echo "TODO";
+var_dump($recovered);
 monetdb_disconnect();
 
 ?>
