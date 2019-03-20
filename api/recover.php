@@ -38,6 +38,9 @@ foreach($explore_object->{'series'} as $key => &$serie) {
     }
 }
 
+$explore_object -> {'runtime'} = $recovered -> {'runtime'};
+$explore_object -> {'rmse'} = $recovered -> {'rmse'};
+ 
 http_response_code(200);
 echo json_encode($explore_object);
 monetdb_disconnect();
