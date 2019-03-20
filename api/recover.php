@@ -31,11 +31,15 @@ include '../algebra.php';
 
 $recovered = recover_all($conn, $explore_object, $threshold, $norm);
 
-// $data = get_serie_data($conn, $table, $series_ids[0], $start, $end, 1);
-// var_dump($data);
+foreach($explore_object->{'series'} as $key => &$serie) {
+    $recov_points = $recovered -> {'series'}[$key]['recovered'];
+    if ($recov_points !== NULL) {
+        $serie['recovered'] = $recov_points;
+    }
+}
+
 http_response_code(200);
-// echo json_encode($explore_object);
-var_dump($recovered);
+echo json_encode($explore_object);
 monetdb_disconnect();
 
 ?>

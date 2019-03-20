@@ -306,16 +306,11 @@ include '../header.php';
             // $('#ground').addClass('hidden');
         }
 
-        function removeGroundLines() {
+        function removeComputedLines() {
             const chart = $('#container').highcharts();
             // Important! separate the ones to be deleted
             // https://stackoverflow.com/questions/6604291/proper-way-to-remove-all-series-data-from-a-highcharts-chart
-            const toBeRemoved = chart.series.filter((serie, i) => {
-                if(/ground/i.test(serie.name)) {
-                    return true;
-                }
-                return false;
-            });
+            const toBeRemoved = chart.series.filter((serie, i) => /ground|recovered/i.test(serie.name));
             toBeRemoved.forEach((serie) => {
                 if (serie !== undefined) {
                     console.log(`removing ${serie.name} loop 1`);
@@ -382,6 +377,7 @@ include '../header.php';
 
         $('#rawButton').click(function () {
             setNorm(0);
+            removeComputedLines();
             $('#zButton').removeClass('active');
             $('#minMaxButton').removeClass('active');
             $('#rawButton').addClass('active');
@@ -389,6 +385,7 @@ include '../header.php';
 
         $('#zButton').click(function () {
             setNorm(1);
+            removeComputedLines();
             $('#rawButton').removeClass('active');
             $('#minMaxButton').removeClass('active');
             $('#zButton').addClass('active');
@@ -396,6 +393,7 @@ include '../header.php';
 
         $('#minMaxButton').click(function () {
             setNorm(2);
+            removeComputedLines();
             $('#rawButton').removeClass('active');
             $('#zButton').removeClass('active');
             $('#minMaxButton').addClass('active');
@@ -434,15 +432,15 @@ include '../header.php';
 
         function redraw(series) {
             const chart = $('#container').highcharts();
-            removeGroundLines();
+            removeComputedLines();
             series.forEach((serie, i) => {
                 if(chart.series[i]) {
                     chart.series[i].setData(serie.points);
                 }
             });
            
-            const filtered = series.filter((next) => next.ground !== undefined);
-            for (const serie of filtered) {
+            const dropped = series.filter((next) => next.ground !== undefined);
+            for (const serie of dropped) {
                 const serieId = `${serie.id}-ground`;
                 const chartSerie = chart.get(serieId);
                 const data = serie.ground;
@@ -455,6 +453,26 @@ include '../header.php';
                     chart.addSeries({
                         id: serieId,
                         name: `${serie.title}-ground`,
+                        color,
+                        dashStyle: 'ShortDot',
+                        data, 
+                    });
+                }
+            }
+            const recovered = series.filter((next) => next.recovered !== undefined);
+            for (const serie of recovered) {
+                const serieId = `${serie.id}-recovered`;
+                const chartSerie = chart.get(serieId);
+                const data = serie.recovered;
+                if (chartSerie !== undefined) {
+                    console.log(`setData ${serie.title}-recovered`);
+                    chartSerie.setData(data);
+                } else {
+                    console.log(`adding ${serie.title}-recovered`);
+                    const color = 'red';
+                    chart.addSeries({
+                        id: serieId,
+                        name: `${serie.title}-recovered`,
                         color,
                         dashStyle: 'ShortDot',
                         data, 
@@ -510,7 +528,7 @@ include '../header.php';
                 min,
                 max,
             };
-            removeGroundLines();
+            removeComputedLines();
             reloadChartWithExtremes(min, max);
         }
 
