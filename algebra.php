@@ -213,10 +213,15 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
 
     for ($j = 0; $j < $n; $j++)
     {
+        if (!isset($sessionobject->{"series"}[$j]["ground"]))
+        {
+            continue;
+        }
+
         $newseries = array();
         $newseries["id"] = $sessionobject->{"series"}[$j]["id"];
         $newseries["title"] = $sessionobject->{"series"}[$j]["title"] . " (recovery)";
-        $recov_response->{"series"}[] = $newseries;
+
 
         $oldseries = $sessionobject->{"series"}[$j]["points"];
         $newpoints = array();
@@ -243,7 +248,8 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
             }
         }
 
-        $recov_response->{"series"}[$j]["recovered"] = $newpoints;
+        $newseries["recovered"] = $newpoints;
+        $recov_response->{"series"}[] = $newseries;
     }
 
 

@@ -169,25 +169,7 @@ class RecoveryTest extends TestCase {
             array(1105315200000, -0.2886974183745343),
             array(1105401600000, -0.32586027488110425),
         );
-        $ground = array(
-            array(1104192000000, -0.5860302173365539),
-            array(1104278400000, -0.6546871709748043),
-            array(1104364800000, -0.7476142728492786),
-            array(1104451200000, -0.8277057188476894),
-            array(1104537600000, -0.8766652693868876),
-            array(1104624000000, -0.79009253119228),
-            array(1104710400000, 0.34635196943776825),
-            array(1104796800000, 0.6263253539732766),
-            array(1104883200000, -0.14713534407953677),
-            array(1104969600000, -0.39232196145957837),
-            array(1105056000000, 0.431762253104055),
-            array(1105142400000, 0.6185324644428621),
-            array(1105228800000, -0.12666665946052252),
-            array(1105315200000, -0.2886974183745343),
-            array(1105401600000, -0.32586027488110425),
-        );
         $serie["points"] = $points;
-        $serie["ground"] = $ground;
         $sample->{"series"}[] = $serie;
 
         // serie 2
@@ -241,7 +223,7 @@ class RecoveryTest extends TestCase {
         $sample = $this->generatePartialSample();
         $retval = recover_all(null, $sample, 0.0001, 0);
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
-        $this->assertTrue(count($retval->{"series"}[2]["recovered"]) == 15);
+        $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
 
         //var_dump($retval);
         //var_dump($retval->{"series"});
