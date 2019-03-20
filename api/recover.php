@@ -33,7 +33,7 @@ $recovered = recover_all($conn, $explore_object, $threshold, $norm);
 
 foreach($explore_object->{'series'} as $key => &$serie) {
     $recov_points = $recovered -> {'series'}[$key]['recovered'];
-    if ($recov_points !== NULL) {
+    if ($recov_points !== NULL && $serie['ground'] !== NULL) {
         $serie['recovered'] = $recov_points;
     }
 }
