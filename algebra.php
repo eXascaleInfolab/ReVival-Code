@@ -6,6 +6,9 @@
  * Time: 10:57
  */
 
+include 'src/utils.php';
+use ReVival\utils;
+
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //                        Algebra core functions                            //
@@ -175,9 +178,14 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
         $mean = array();
         $stddev = array();
 
+        $table = ReVival\Utils::getTableName(
+            $sessionobject->{"series"}[0]["points"][0][0],
+            $sessionobject->{"series"}[0]["points"][$m-1][0]
+        );
+
         for ($j = 0; $j < $n; $j++)
         {
-            $stat = get_statistics($conn, "hourly", $sessionobject->{"series"}[$j]->{"id"});
+            $stat = get_statistics($conn, $table, $sessionobject->{"series"}[$j]["id"]);
             $mean[] = $stat->{"mean"};
             $stddev[] = $stat->{"stddev"};
         }
