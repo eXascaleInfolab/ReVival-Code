@@ -482,7 +482,7 @@ include '../header.php';
                 try {
                     chartSerie = chart.get(serieId);
                 } catch (err) {
-                   console.error(err);
+                    console.error(`chart.get failed for id: ${serieId}`);
                 }
                 const data = serie.recovered;
                 if (chartSerie !== undefined) {
