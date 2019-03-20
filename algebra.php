@@ -6,9 +6,6 @@
  * Time: 10:57
  */
 
-include 'src/utils.php';
-use ReVival\utils;
-
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
 //                        Algebra core functions                            //
