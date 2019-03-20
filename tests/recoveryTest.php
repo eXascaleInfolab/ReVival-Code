@@ -222,7 +222,7 @@ class RecoveryTest extends TestCase {
 
     public function testRecovery() {
         $sample = $this->generatePartialSample();
-        $retval = recover_all(null, $sample, 0.0001, 0);
+        $retval = recover_all(null, $sample, 0.0001, 0, "hourly");
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
         $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
 
@@ -233,7 +233,7 @@ class RecoveryTest extends TestCase {
 
     public function testRecoveryC($conn) {
         $sample = $this->generatePartialSample();
-        $retval = recover_all($conn, $sample, 0.0001, 0);
+        $retval = recover_all($conn, $sample, 0.0001, 0, "hourly");
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
         $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
 

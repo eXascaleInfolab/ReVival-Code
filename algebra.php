@@ -6,7 +6,7 @@
  * Time: 10:57
  */
 
-include 'src/utils.php';
+include 'connect.php';
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -150,9 +150,10 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
  * @param $sessionobject : Object | object containing all time series with their metadata
  * @param $threshold : Double | limit of meansquarediff between iteration
  * @param $normtype : int | 0 to indicate the data is not normalized
+ * @param $table : string | table where the data was taken from
  * @return object : object | same structure as session object, but adapted to visualise it in the chart
  */
-function recover_all($conn, $sessionobject, $threshold, $normtype)
+function recover_all($conn, $sessionobject, $threshold, $normtype, $table)
 {
     $x = array();
 
@@ -177,10 +178,10 @@ function recover_all($conn, $sessionobject, $threshold, $normtype)
         $mean = array();
         $stddev = array();
 
-        $table = ReVival\Utils::getTableName(
-            $sessionobject->{"series"}[0]["points"][0][0],
-            $sessionobject->{"series"}[0]["points"][$m-1][0]
-        );
+        //$table = ReVival\Utils::getTableName(
+        //    $sessionobject->{"series"}[0]["points"][0][0],
+        //    $sessionobject->{"series"}[0]["points"][$m-1][0]
+        //);
 
         for ($j = 0; $j < $n; $j++)
         {
