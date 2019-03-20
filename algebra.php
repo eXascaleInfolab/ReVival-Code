@@ -368,6 +368,18 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
         $iters++;
     }
 
+    // denormalize back
+    if ($normalize)
+    {
+        for ($i = 0; $i < $n; ++$i)
+        {
+            for ($j = 0; $j < $m; ++$j)
+            {
+                $x[$i][$j] = ($x[$i][$j] * $stddev[$j]) + $mean[$j];
+            }
+        }
+    }
+
     return array($x, $iters);
 }
 
