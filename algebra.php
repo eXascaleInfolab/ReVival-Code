@@ -194,6 +194,22 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $__recov_vers
     $iter = $x[1];
     $x = $x[0];
 
+    $RMSE = 0.0;
+    for ($j = 0; $j < $n; $j++)
+    {
+        for ($i = 0; $i < $m; $i++)
+        {
+            if (is_null($sessionobject->{"series"}[$j]->{"points"}[$i][1]))
+            {
+                $gr = $sessionobject->{"ground"}[$j]->{"points"}[$i][1];
+                $delta = $x[$i][$j] - $gr;
+
+                $RMSE += $delta * $delta;
+            }
+        }
+    }
+    $RMSE = sqrt($RMSE);
+
     // $__recov_version
     //   version 0 = return everything
     //   version 1 = return only missing elements
@@ -365,7 +381,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $__recov_vers
     }
 
     $recov_response->{"runtime"} = $time_elapsed;
-    $recov_response->{"iterations"} = $iter;
+    $recov_response->{"rmse"} = $RMSE;
 
     return $recov_response;
 }
