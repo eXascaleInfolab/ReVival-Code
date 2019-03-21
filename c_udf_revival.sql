@@ -9,7 +9,7 @@
 -- sudo cp cmake-build-debug/libIncCD.so /usr/local/lib
     -- or
 -- replace the path at the start of the function with a relative path
--- const char *libraryPath = "/path/to/repo/CD_tool/cmake-build-debug/libIncCD.so";
+-- #define CENTROID_LIBRARY_PATH "/path/to/repo/CD_tool/cmake-build-debug/libIncCD.so";
 
 --usage:
 -- SELECT SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_recovery_revival((
@@ -30,30 +30,32 @@ LANGUAGE CPP
     #include <dlfcn.h>
     #include <cmath>
     #include <map>
-
-    const char *libraryPath = "libIncCD.so";
+    #define CENTROID_LIBRARY_PATH "libIncCD.so"
 
     //-- verify basic integrity of the data
-    if (dt_in.count != sid_in.count || dt_in.count != tsval.count) {
+    if (dt_in.count != sid_in.count || dt_in.count != tsval.count)
+    {
         return const_cast<char *>("centroid_recovery_revival/5(error) : invalid cardinality of time series, ids/timestamps/values are not aligned");
     }
 
     //-- special case when no values are given
-    if (dt_in.count == 0) {
+    if (dt_in.count == 0)
+    {
         series_id->initialize(series_id, 0);
         datetime->initialize(datetime, 0);
         value_recovered->initialize(value_recovered, 0);
         return NULL;
     }
+
+    //-- additional integrity check
+    if (eps.count <= 0 || trunc.count <= 0)
+    {
+        return const_cast<char *>("centroid_recovery_revival/5(error) : invalid cardinality of config parameters, eps or trunc are empty");
+    }
     
     //-- init data, this is exactly enough to fit all the data passed inside
     size_t total = dt_in.count;
     double *_data = (double *)malloc(sizeof(double) * total);
-
-    //-- cd params and caller
-    size_t truncation = trunc.data[0];
-    double epsilon = eps.data[0];
-    size_t norm = 0, opt = 0, svs = 0;
 
     //-- calculate m & verify integrity of the data
 
@@ -101,8 +103,19 @@ LANGUAGE CPP
         _data[m * i + j] = tsval.is_null(tsval.data[it]) ? NAN : tsval.data[it];
     }
 
+    //-- cd params
+    size_t truncation = trunc.data[0];
+    double epsilon = eps.data[0];
+    size_t norm = (size_t)false, //-- do not normalize
+           opt = 0, //-- code 0, no additional optimizations
+           svs = 22; //-- 22 = forced LSV-no-init to match ReVival impl.
+
     //-- recover with external call to cd
-    void *cdlib = dlopen(libraryPath, RTLD_LAZY);
+    /**/#ifdef CENTROID_LIBRARY_PATH
+    void *cdlib = dlopen(CENTROID_LIBRARY_PATH, RTLD_LAZY);
+    /**/#else
+    void *cdlib = dlopen("libIncCD.so", RTLD_LAZY);
+    /**/#endif
     if (cdlib == nullptr)
     {
         free(_data);
