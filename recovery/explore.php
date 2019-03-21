@@ -245,19 +245,19 @@ include '../header.php';
                         <label for="">
                             Runtime:
                             <span id="runtime"> </span>
-                        </label>
+                        </label><br/>
                         <label for="">
                             RMSE (raw):
                             <span id="rmse"></span>
-                        </label>
+                        </label><br/>
                         <label for="">
                             RMSE (normal):
                             <span id="rmse_norm"></span>
-                        </label>
+                        </label><br/>
                         <label for="">
                             MAE (raw):
                             <span id="mae"></span>
-                        </label>
+                        </label><br/>
                         <label for="">
                             MAE (normal):
                             <span id="mae_norm"></span>
