@@ -213,6 +213,12 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table)
             if (is_null($sessionobject->{"series"}[$j]["points"][$i][1]))
             {
                 $gr = $sessionobject->{"series"}[$j]["ground"][$i][1];
+
+                if (!isset($gr) || is_null($gr))
+                {
+                    continue;
+                }
+
                 $delta = $x[$i][$j] - $gr;
 
                 $RMSE += $delta * $delta;
