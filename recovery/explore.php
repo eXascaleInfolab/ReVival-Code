@@ -370,7 +370,7 @@ include '../header.php';
                 .then((json) => {
                     console.log(json);
                     removeComputedLines();
-                    redraw(json.series, json.rmse, json.runtime, json.rmse_normal, json.mae, json.mae_normal);
+                    redraw(json.series, json.rmse, json.runtime, json.rmse_norm, json.mae, json.mae_norm);
                     showRecover();
                 })
                 .catch(err => console.error(err))
