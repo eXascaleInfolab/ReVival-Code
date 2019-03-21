@@ -243,12 +243,24 @@ include '../header.php';
                     />
                     <div id='metrics' class="hidden">
                         <label for="">
-                            runtime:
+                            Runtime:
                             <span id="runtime"> </span>
                         </label>
                         <label for="">
-                            rmse:
+                            RMSE (raw):
                             <span id="rmse"></span>
+                        </label>
+                        <label for="">
+                            RMSE (normal):
+                            <span id="rmse_norm"></span>
+                        </label>
+                        <label for="">
+                            MAE (raw):
+                            <span id="mae"></span>
+                        </label>
+                        <label for="">
+                            MAE (normal):
+                            <span id="mae_norm"></span>
                         </label>
                     </div>
                 </footer>
@@ -358,7 +370,7 @@ include '../header.php';
                 .then((json) => {
                     console.log(json);
                     removeComputedLines();
-                    redraw(json.series, json.rmse, json.runtime);
+                    redraw(json.series, json.rmse, json.runtime, json.rmse_normal, json.mae, json.mae_normal);
                     showRecover();
                 })
                 .catch(err => console.error(err))
@@ -442,7 +454,7 @@ include '../header.php';
             }
         }
 
-        function redraw(series, rmse=null, runtime=null) {
+        function redraw(series, rmse=null, runtime=null, rmse_normal=null, mae=null, mae_normal=null) {
             const chart = $('#container').highcharts();
             series.forEach((serie, i) => {
                 if(chart.series[i]) {
@@ -500,10 +512,13 @@ include '../header.php';
                     });
                 }
             }
-            if (rmse && runtime) {
-                $('#metrics').removeClass('hidden')
-                $('#rmse').text(rmse);
+            if (runtime) { // this should be enough to establish that recovery was performed
+                $('#metrics').removeClass('hidden');
                 $('#runtime').text(runtime);
+                if (rmse) $('#rmse').text(rmse); else $('#rmse').text("N/A");
+                if (rmse_normal) $('#rmse_norm').text(rmse_normal); else $('#rmse_norm').text("N/A");
+                if (mae) $('#mae').text(mae); else $('#mae').text("N/A");
+                if (mae_normal) $('#mae_norm').text(mae_normal); else $('#mae_norm').text("N/A");
             }
         }
 
