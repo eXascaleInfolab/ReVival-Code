@@ -29,7 +29,7 @@ $explore_object = clone $_SESSION['drop'];
 
 include '../algebra.php';
 
-$recovered = recover_all($conn, $explore_object, $threshold, $norm);
+$recovered = recover_all($conn, $explore_object, $threshold, $norm, $table);
 
 foreach($explore_object->{'series'} as $key => &$serie) {
     $recov_points = $recovered -> {'series'}[$key]['recovered'];
@@ -39,8 +39,12 @@ foreach($explore_object->{'series'} as $key => &$serie) {
 }
 
 $explore_object -> {'runtime'} = $recovered -> {'runtime'};
-$explore_object -> {'rmse'} = $recovered -> {'rmse'};
- 
+
+if (isset($recovered -> {'rmse'})) $explore_object -> {'rmse'} = $recovered -> {'rmse'};
+if (isset($recovered -> {'rmse_norm'})) $explore_object -> {'rmse_norm'} = $recovered -> {'rmse_norm'};
+if (isset($recovered -> {'mae'})) $explore_object -> {'mae'} = $recovered -> {'mae'};
+if (isset($recovered -> {'mae_norm'})) $explore_object -> {'mae_norm'} = $recovered -> {'mae_norm'};
+
 http_response_code(200);
 echo json_encode($explore_object);
 monetdb_disconnect();
