@@ -169,9 +169,9 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table, $visi
 
         for ($s = 0; $s < count($visible); $s++)
         {
-            if ($visible[$s]["id"] == $sid)
+            if ($visible[$s]->{"id"} == $sid)
             {
-                $visibility_idx[] = $visible[$s]["visible"];
+                $visibility_idx[] = $visible[$s]->{"visible"};
                 break;
             }
         }

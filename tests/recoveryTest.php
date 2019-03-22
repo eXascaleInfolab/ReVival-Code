@@ -222,34 +222,60 @@ class RecoveryTest extends TestCase {
 
     public function testRecovery() {
         $visibility = array();
-        $visibility[] = array("id" => "2112", "visible" => true);
-        $visibility[] = array("id" => "2181", "visible" => true);
-        $visibility[] = array("id" => "2303", "visible" => false);
+
+        $vis_curr = new \stdClass();
+        $vis_curr->{"id"} = "2112";
+        $vis_curr->{"visible"} = true;
+        $visibility[] = $vis_curr;
+
+        $vis_curr = new \stdClass();
+        $vis_curr->{"id"} = "2181";
+        $vis_curr->{"visible"} = true;
+        $visibility[] = $vis_curr;
+
+        $vis_curr = new \stdClass();
+        $vis_curr->{"id"} = "2303";
+        $vis_curr->{"visible"} = true;
+        //$visibility[] = $vis_curr;
 
         $sample = $this->generatePartialSample();
         $retval = recover_all(null, $sample, 0.0001, 0, "hourly", $visibility);
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
-        $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
+        $this->assertTrue(count($retval->{"series"}[2]["recovered"]) == 15);
 
         //var_dump($retval);
         //var_dump($retval->{"series"});
         //var_dump($retval->{"series"}[0]);
+        //var_dump($retval->{"series"}[2]);
     }
 
     public function testRecoveryC($conn) {
         $visibility = array();
-        $visibility[] = array("id" => "2112", "visible" => true);
-        $visibility[] = array("id" => "2181", "visible" => true);
-        $visibility[] = array("id" => "2303", "visible" => false);
+
+        $vis_curr = new \stdClass();
+        $vis_curr->{"id"} = "2112";
+        $vis_curr->{"visible"} = true;
+        $visibility[] = $vis_curr;
+
+        $vis_curr = new \stdClass();
+        $vis_curr->{"id"} = "2181";
+        $vis_curr->{"visible"} = true;
+        $visibility[] = $vis_curr;
+
+        $vis_curr = new \stdClass();
+        $vis_curr->{"id"} = "2303";
+        $vis_curr->{"visible"} = true;
+        //$visibility[] = $vis_curr;
 
         $sample = $this->generatePartialSample();
         $retval = recover_all($conn, $sample, 0.0001, 0, "hourly", $visibility);
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
-        $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
+        $this->assertTrue(count($retval->{"series"}[2]["recovered"]) == 15);
 
         //var_dump($retval);
         //var_dump($retval->{"series"});
         //var_dump($retval->{"series"}[0]);
+        //var_dump($retval->{"series"}[2]);
     }
 }
 //(new RecoveryTest())->testRecoveryC($conn);
