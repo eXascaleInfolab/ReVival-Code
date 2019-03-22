@@ -143,8 +143,104 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
 }
 
 
+/** Performs the recovery of all missing values in all time series stored in the session object using CPP-UDF.
+ * Returns recovery and its technical data (#iters, recovery runtime).
+ * @param $conn : Object | monetdb connection object
+ * @param $explore_object : Object | object containing all time series with their metadata
+ * @param $threshold : Double | limit of meansquarediff between iteration
+ * @param $normtype : int | 0 to indicate the data is not normalized
+ * @param $table : string | table where the data was taken from
+ * @param $visible : array | list of ids with their indication whether they are to be used as reference in recovery
+ */
+function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $visible, $start, $end)
+{
+    $series_cases = "";
+    $series_filter = "";
+
+    $series_dict = array();
+    $counter = 0;
+
+    foreach ($explore_object->{"series"} as $rseries)
+    {
+        $this_id = $rseries["id"];
+        $series_dict["$this_id"] = array($counter, 0);
+
+        $status = "unused";
+        if (isset($rseries["ground"]))
+        {
+            $status = "missing";
+            $series_filter .= "series_id = $this_id OR ";
+            $explore_object->{'series'}[$counter]["recovered"] = array(); //for the future
+        }
+        else
+        {
+            foreach ($visible as $vseries)
+            {
+                if ($vseries->{"id"} == $rseries["id"])
+                {
+                    $status = "reference";
+                    $series_filter .= "series_id = $this_id OR ";
+                    break;
+                }
+            }
+        }
+
+        if ($status == "missing")
+        {
+            $series_cases .= "WHEN series_id = $this_id AND (datetime BETWEEN sys.epoch("
+                . $explore_object->{'series'}[$counter]["start_drop_ts"] . ") AND sys.epoch("
+                . $explore_object->{'series'}[$counter]["end_drop_ts"] . ")) THEN null \n";
+        }
+
+        $counter++;
+    }
+
+    /*
+    $qry = "
+    SELECT series_id, sys.epoch(datetime) * 1000 as timeval,
+        CASE
+            $series_cases
+            ELSE value
+        END AS value_recovered -- TODO: WARNING! REPLACE THIS VALUE
+    FROM $table
+    WHERE ($series_filter false)
+        AND (datetime >= sys.epoch($start) AND datetime <= sys.epoch($end));
+    ";
+    */
+
+    $qry = "
+    SELECT series_id, sys.epoch(datetime) * 1000 as timeval, value_recovered FROM sys.centroid_recovery_revival((
+        SELECT series_id, datetime,
+            CASE
+                $series_cases
+                ELSE value
+            END AS value,
+            0, $threshold
+        FROM $table
+        WHERE ($series_filter false)
+            AND (datetime >= sys.epoch($start) AND datetime <= sys.epoch($end))
+    ));
+    ";
+
+    $start_compute = microtime(true);
+    $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
+
+    while ($row = monetdb_fetch_assoc($res)) {
+        $idx = $series_dict["" . $row["series_id"]][0];
+        $idx_l = $series_dict["" . $row["series_id"]][1];
+        $series_dict["" . $row["series_id"]][1] += 1;
+
+        $explore_object->{'series'}[$idx]["recovered"][] = array(
+            intval($row["timeval"]),
+            is_null($explore_object->{'series'}[$idx]["ground"][$idx_l][1]) ? null : floatval($row["value_recovered"])
+        );
+    }
+    $explore_object -> {'runtime'} = (microtime(true) - $start_compute) * 1000;
+
+    //todo: add mse/mae
+}
+
 /** Performs the recovery of all missing values in all time series stored in the session object.
- * Takes stats information to do normalization during recovery.
  * Returns recovery and its technical data (#iters, recovery runtime).
  * @param $conn : Object | monetdb connection object
  * @param $sessionobject : Object | object containing all time series with their metadata

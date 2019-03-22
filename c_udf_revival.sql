@@ -106,7 +106,7 @@ LANGUAGE CPP
     //-- cd params
     size_t truncation = trunc.data[0];
     double epsilon = eps.data[0];
-    size_t norm = (size_t)false, //-- do not normalize
+    size_t norm = (size_t)true, //-- normalize, since we always have raw data
            opt = 0, //-- code 0, no additional optimizations
            svs = 22; //-- 22 = forced LSV-no-init to match ReVival impl.
 
@@ -161,7 +161,7 @@ WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
 
 -- same selector, but with a pass-through of centroid_recovery_revival/5 to recover all nulls
 SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_recovery_revival((
-    SELECT series_id, datetime, value, 0.01, 1 FROM hourly
+    SELECT series_id, datetime, value, 1, 0.01 FROM hourly
     WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
         AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
 ));
@@ -253,3 +253,30 @@ more>));
 +-----------+-----------+--------------------------+
 30 tuples
 */
+
+-- more advanced example
+
+-- selector for a few time series, but afticially changing the values (can be set to null)
+SELECT series_id, sys.epoch(datetime) as timeval,
+    CASE
+        WHEN series_id = 2112 AND (datetime BETWEEN sys.epoch(126597600) AND sys.epoch(126662400)) THEN value + 10
+        WHEN series_id = 2303 AND (datetime BETWEEN sys.epoch(126684000) AND sys.epoch(126748800)) THEN value + 10
+        ELSE value
+    END AS value
+FROM hourly
+WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303 OR false)
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+
+-- all recovered
+SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_recovery_revival((
+    SELECT series_id, datetime,
+        CASE
+            WHEN series_id = 2112 AND (datetime BETWEEN sys.epoch(126597600) AND sys.epoch(126662400)) THEN null
+            WHEN series_id = 2303 AND (datetime BETWEEN sys.epoch(126684000) AND sys.epoch(126748800)) THEN null
+            ELSE value
+        END AS value,
+        1, 0.01
+    FROM hourly
+    WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
+        AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+));
