@@ -30,7 +30,7 @@ $explore_object = clone $_SESSION['drop'];
 
 include '../algebra.php';
 
-$recovered = recover_all($conn, $explore_object, $threshold, $norm, $table);
+$recovered = recover_all($conn, $explore_object, $threshold, $norm, $table, $visible);
 
 foreach($explore_object->{'series'} as $key => &$serie) {
     $recov_points = $recovered -> {'series'}[$key]['recovered'];

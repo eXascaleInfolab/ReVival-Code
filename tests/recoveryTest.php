@@ -221,8 +221,13 @@ class RecoveryTest extends TestCase {
     }
 
     public function testRecovery() {
+        $visibility = array();
+        $visibility[] = array("id" => "2112", "visible" => true);
+        $visibility[] = array("id" => "2181", "visible" => true);
+        $visibility[] = array("id" => "2303", "visible" => false);
+
         $sample = $this->generatePartialSample();
-        $retval = recover_all(null, $sample, 0.0001, 0, "hourly");
+        $retval = recover_all(null, $sample, 0.0001, 0, "hourly", $visibility);
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
         $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
 
@@ -232,8 +237,13 @@ class RecoveryTest extends TestCase {
     }
 
     public function testRecoveryC($conn) {
+        $visibility = array();
+        $visibility[] = array("id" => "2112", "visible" => true);
+        $visibility[] = array("id" => "2181", "visible" => true);
+        $visibility[] = array("id" => "2303", "visible" => false);
+
         $sample = $this->generatePartialSample();
-        $retval = recover_all($conn, $sample, 0.0001, 0, "hourly");
+        $retval = recover_all($conn, $sample, 0.0001, 0, "hourly", $visibility);
         $this->assertTrue(count($retval->{"series"}[0]["recovered"]) == 15);
         $this->assertTrue(count($retval->{"series"}[1]["recovered"]) == 15);
 

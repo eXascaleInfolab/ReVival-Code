@@ -151,22 +151,41 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
  * @param $threshold : Double | limit of meansquarediff between iteration
  * @param $normtype : int | 0 to indicate the data is not normalized
  * @param $table : string | table where the data was taken from
+ * @param $visible : array | list of ids with their indication whether they are to be used as reference in recovery
  * @return object : object | same structure as session object, but adapted to visualise it in the chart
  */
-function recover_all($conn, $sessionobject, $threshold, $normtype, $table)
+function recover_all($conn, $sessionobject, $threshold, $normtype, $table, $visible)
 {
     $x = array();
 
     $m = count($sessionobject->{"series"}[0]["points"]);    // number of values per series: rows in the matrix
     $n = count($sessionobject->{"series"}); // number of series
 
+    $visibility_idx = array();
+
     for ($j = 0; $j < $n; $j++)
     {
+        $sid = $sessionobject->{"series"}[$j]["id"];
+
+        for ($s = 0; $s < count($visible); $s++)
+        {
+            if ($visible[$s]["id"] == $sid)
+            {
+                $visibility_idx[] = $visible[$s]["visible"];
+                break;
+            }
+        }
+
+        if (!isset($visibility_idx[$j]))
+        {
+            $visibility_idx[] = false;
+        }
+
         $col = array();
 
         for ($i = 0; $i < $m; $i++)
         {
-            $col[] = $sessionobject->{"series"}[$j]["points"][$i][1];
+            $col[] = $visibility_idx[$j] ? $sessionobject->{"series"}[$j]["points"][$i][1] : 0.0;
         }
 
         $x[] = $col;
@@ -178,13 +197,15 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table)
         $mean = array();
         $stddev = array();
 
-        //$table = ReVival\Utils::getTableName(
-        //    $sessionobject->{"series"}[0]["points"][0][0],
-        //    $sessionobject->{"series"}[0]["points"][$m-1][0]
-        //);
-
         for ($j = 0; $j < $n; $j++)
         {
+            if (!$visibility_idx[$j])
+            {
+                $mean[] = 0.0;
+                $stddev[] = 1.0;
+                continue;
+            }
+
             $stat = get_statistics($conn, $table, $sessionobject->{"series"}[$j]["id"]);
             $mean[] = $stat->{"mean"};
             $stddev[] = $stat->{"stddev"};
@@ -208,6 +229,8 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table)
     $counter = 0;
     for ($j = 0; $j < $n; $j++)
     {
+        if (!$visibility_idx[$j]) continue;
+
         for ($i = 0; $i < $m; $i++)
         {
             if (is_null($sessionobject->{"series"}[$j]["points"][$i][1]))
@@ -310,7 +333,40 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
     $n = count($x); // number of rows
     $m = count($x[0]); // number of columns
 
-    if ($k >= $m) $k = 1;
+    $kinda_m = 0;
+    for ($j = 0; $j < $m; $j++)
+    {
+        $any = false;
+        for ($i = 0; $i < $n; $i++)
+        {
+            if (is_null($x[$i][$j]) || $x[$i][$j] === 0.0)
+            { }
+            else
+            {
+                $any = true;
+                break;
+            }
+        }
+        if ($any) $kinda_m++;
+    }
+
+    if ($k >= $m) $k = 0;
+
+    if ($k == 0)
+    {
+        if ($kinda_m == 2 || $kinda_m == 3)
+        {
+            $k = 1;
+        }
+        else if ($kinda_m == 4 || $kinda_m == 5)
+        {
+            $k = 2;
+        }
+        else
+        {
+            $k = 3;
+        }
+    }
 
     // write out all indexes of missing values in the base series
     $missing_value_indices = array();
