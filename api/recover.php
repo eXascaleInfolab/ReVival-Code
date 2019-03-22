@@ -23,6 +23,7 @@ $norm = (int)$json -> {'norm'};
 $ground_thruth = (bool)$json -> {'ground'};
 $threshold = (float)$json -> {'threshold'};
 $series_ids = $json -> {'series'};
+$visible = $json -> {'visible'};
 
 // has the cached series with drop values from /api/drop.php
 $explore_object = clone $_SESSION['drop'];

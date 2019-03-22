@@ -14,6 +14,7 @@ $drop = $json -> {'drop'};
 $norm = (int)$json -> {'norm'};
 // series ids for which the drop % will be applied.
 $series_ids = $json -> {'series'};
+$visible = $json -> {'visible'};
 
 if ($drop === 0 || count($series_ids) === 0) {
     http_response_code(400);

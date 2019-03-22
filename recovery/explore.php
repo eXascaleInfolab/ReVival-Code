@@ -348,12 +348,14 @@ include '../header.php';
             const form = e.target;
             const selectedOptions = form['base_serie'].selectedOptions;
             const series = Array.from(selectedOptions).map(next => parseInt(next.value, 10));
+            const visible = store.series.filter((next) => next.visible);
             // const ground = form['groundTruth'].checked;
             const data = {
                 norm: store.norm,
                 start: store.min,
                 end: store.max,
                 series,
+                visible,
                 threshold: parseFloat(form['threshold'].value, 10),
                 drop: parseFloat(form['drop'].value, 10),
             };
@@ -553,8 +555,14 @@ include '../header.php';
 
         // handles chart legend item clicks
         function legendItemClickHandler(e) {
+            const visible = !e.target.visible; // toggle
+            for (const serie of store.series) {
+                if (serie.name === e.target.name) {
+                    serie.visible = visible;
+                    break;
+                }
+            }
             console.log(`${e.target.name} click!`);
-            // TODO handle logic with togged serie
         }
 
         /**
@@ -578,8 +586,14 @@ include '../header.php';
             var explore_object = data[0];
             var renderedSeries = [];
             var visibility = true;
+            const storeSeries = [];
 
             explore_object.series.forEach(function (series) {
+                storeSeries.push({
+                    id: parseInt(series.id, 10),
+                    name: series.title,
+                    visible: true,
+                });
                 renderedSeries.push({
                     id: parseInt(series.id, 10),
                     type: 'line',
@@ -591,6 +605,7 @@ include '../header.php';
 
             });
 
+            updateStore({series: storeSeries});
 
             // create the chart
             var chart = $('#container').highcharts('StockChart', {
