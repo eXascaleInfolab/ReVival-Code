@@ -330,17 +330,17 @@ include '../header.php';
         }
 
         function reloadChartWithExtremes(min, max) {
-            var query = 'explore_complete_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&start=' + min + '&end=' + max + '&callback=?';
+            var query = 'explore_incomplete_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&start=' + min + '&end=' + max + '&callback=?';
             loadChart(query);
         }
 
         function reloadEntireChart() {
-            var query = 'explore_complete_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?';
+            var query = 'explore_incomplete_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?';
             loadChart(query);
         }
 
         // See source code from the JSONP handler at https://github.com/highcharts/highcharts/blob/master/samples/data/from-sql.php
-        $.getJSON('explore_complete_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?', function (data) {
+        $.getJSON('explore_incomplete_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?', function (data) {
             var explore_object = data[0];
             var renderedSeries = [];
             var visibility = true;
