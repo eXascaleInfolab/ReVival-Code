@@ -16,6 +16,7 @@
 --    SUBQUERY_SELECTING_VALUES_WITH_NULLS
 -- );
 
+SET SCHEMA sys;
 DROP FUNCTION IF EXISTS centroid_recovery_revival;
 CREATE FUNCTION centroid_recovery_revival(
         sid_in INTEGER, dt_in TIMESTAMP, tsval FLOAT,
@@ -269,6 +270,195 @@ WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303 OR false)
 
 -- all recovered
 SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_recovery_revival((
+    SELECT series_id, datetime,
+        CASE
+            WHEN series_id = 2112 AND (datetime BETWEEN sys.epoch(126597600) AND sys.epoch(126662400)) THEN null
+            WHEN series_id = 2303 AND (datetime BETWEEN sys.epoch(126684000) AND sys.epoch(126748800)) THEN null
+            ELSE value
+        END AS value,
+        1, 0.01
+    FROM hourly
+    WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
+        AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+));
+
+-- version that also returns runtime
+
+SET SCHEMA sys;
+DROP FUNCTION IF EXISTS centroid_recovery_revival_runtime;
+CREATE FUNCTION centroid_recovery_revival_runtime(
+        sid_in INTEGER, dt_in TIMESTAMP, tsval FLOAT,
+        trunc INTEGER, eps FLOAT
+    )
+RETURNS TABLE(
+        series_id INTEGER, datetime TIMESTAMP, value_recovered FLOAT, runtime INTEGER
+    )
+LANGUAGE CPP
+{
+    #pragma LDFLAGS -ldl
+    #include <dlfcn.h>
+    #include <cmath>
+    #include <map>
+    #include <chrono>
+    //#define CENTROID_LIBRARY_PATH "libIncCD.so"
+    #define CENTROID_LIBRARY_PATH "/home/zakhar/MVR/CentroidCentral/CD_tool/cmake-build-debug/libIncCD.so"
+
+    //-- verify basic integrity of the data
+    if (dt_in.count != sid_in.count || dt_in.count != tsval.count)
+    {
+        return const_cast<char *>("centroid_recovery_revival_runtime/5(error) : invalid cardinality of time series, ids/timestamps/values are not aligned");
+    }
+
+    //-- special case when no values are given
+    if (dt_in.count == 0)
+    {
+        series_id->initialize(series_id, 0);
+        datetime->initialize(datetime, 0);
+        value_recovered->initialize(value_recovered, 0);
+        return NULL;
+    }
+
+    //-- additional integrity check
+    if (eps.count <= 0 || trunc.count <= 0)
+    {
+        return const_cast<char *>("centroid_recovery_revival_runtime/5(error) : invalid cardinality of config parameters, eps or trunc are empty");
+    }
+    
+    //-- init data, this is exactly enough to fit all the data passed inside
+    size_t total = dt_in.count;
+    double *_data = (double *)malloc(sizeof(double) * total);
+
+    //-- calculate m & verify integrity of the data
+
+    std::map<int, size_t> id2idx;
+    std::map<int, size_t> id2size;
+
+    auto getidx = [&](int x) -> size_t { return id2idx.find(x)->second; };
+    auto getrowidx = [&](int x) -> size_t & { return id2size.find(x)->second; };
+
+    for (size_t i = 0; i < total; ++i)
+    {
+        int sid = sid_in.data[i];
+        auto iter = id2size.find(sid);
+
+        if (iter != id2size.end())
+        {
+            iter->second++;
+        }
+        else
+        {
+            id2idx.emplace(std::make_pair(sid, id2size.size()));
+            id2size.emplace(std::make_pair(sid, 1));
+        }
+    }
+
+    size_t m = id2idx.size();
+    size_t n = id2size.begin()->second;
+
+    for (auto iter = id2size.begin(); iter != id2size.end(); ++iter)
+    {
+        if (iter->second != n)
+        {
+            free(_data);
+            return const_cast<char *>("centroid_recovery_revival_runtime/5(error) : invalid time series input, series contain dirrefent number of values");
+        }
+    }
+
+    //-- step 2 - iterate over data and fill the matrix
+
+    for (size_t it = 0; it < total; ++it)
+    {
+        size_t j = getidx(sid_in.data[it]);
+        size_t i = (n - getrowidx(sid_in.data[it])--);
+
+        _data[m * i + j] = tsval.is_null(tsval.data[it]) ? NAN : tsval.data[it];
+    }
+
+    //-- cd params
+    size_t truncation = trunc.data[0];
+    double epsilon = eps.data[0];
+    size_t norm = (size_t)true, //-- normalize, since we always have raw data
+           opt = 0, //-- code 0, no additional optimizations
+           svs = 22; //-- 22 = forced LSV-no-init to match ReVival impl.
+
+    //-- recover with external call to cd
+    /**/#ifdef CENTROID_LIBRARY_PATH
+    void *cdlib = dlopen(CENTROID_LIBRARY_PATH, RTLD_LAZY);
+    /**/#else
+    void *cdlib = dlopen("libIncCD.so", RTLD_LAZY);
+    /**/#endif
+    if (cdlib == nullptr)
+    {
+        free(_data);
+        return const_cast<char *>("centroid_recovery_revival_runtime/5(error) : cannot open shared library with CD implementation");
+    }
+    void (*rcdfuncptr)(double*,size_t,size_t,size_t,double,size_t,size_t,size_t);
+    *((void **)&rcdfuncptr) = dlsym(cdlib, "recoveryOfMissingValuesParametrized");
+
+    std::chrono::steady_clock::time_point begin;
+    std::chrono::steady_clock::time_point end;
+    begin = std::chrono::steady_clock::now();
+    rcdfuncptr(_data, n, m,
+        truncation, epsilon,
+        norm, opt, svs
+    ); //-- no allocations that are not freed here
+    end = std::chrono::steady_clock::now();
+    int64_t rt_result = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+
+    dlclose(cdlib);
+
+    //-- populate return values
+
+    series_id->initialize(series_id, total);
+    datetime->initialize(datetime, total);
+    value_recovered->initialize(value_recovered, total);
+    runtime->initialize(runtime, total);
+
+    for (size_t it = 0; it < total; ++it)
+    {
+        size_t j = getidx(sid_in.data[it]);
+        size_t i = getrowidx(sid_in.data[it])++;
+
+        series_id->data[it] = sid_in.data[it];
+        datetime->data[it] = dt_in.data[it];
+        value_recovered->data[it] = _data[m * i + j];
+        runtime->data[it] = rt_result;
+    }
+
+    //--cleanup
+    free(_data);
+    return NULL;
+};
+
+-- examples
+
+SET SCHEMA data;
+
+-- selector for a few time series, they already contain nulls in this table
+SELECT series_id, sys.epoch(datetime) as timeval, value FROM hourly
+WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+
+-- same selector, but with a pass-through of centroid_recovery_revival_runtime/5 to recover all nulls
+SELECT series_id, sys.epoch(datetime) as timeval, value_recovered, runtime FROM sys.centroid_recovery_revival_runtime((
+    SELECT series_id, datetime, value, 1, 0.01 FROM hourly
+    WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
+        AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+));
+
+-- selector for a few time series, but afticially changing the values (can be set to null)
+SELECT series_id, sys.epoch(datetime) as timeval,
+    CASE
+        WHEN series_id = 2112 AND (datetime BETWEEN sys.epoch(126597600) AND sys.epoch(126662400)) THEN value + 10
+        WHEN series_id = 2303 AND (datetime BETWEEN sys.epoch(126684000) AND sys.epoch(126748800)) THEN value + 10
+        ELSE value
+    END AS value
+FROM hourly
+WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303 OR false)
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+
+-- all recovered
+SELECT series_id, sys.epoch(datetime) as timeval, value_recovered, runtime FROM sys.centroid_recovery_revival_runtime((
     SELECT series_id, datetime,
         CASE
             WHEN series_id = 2112 AND (datetime BETWEEN sys.epoch(126597600) AND sys.epoch(126662400)) THEN null
