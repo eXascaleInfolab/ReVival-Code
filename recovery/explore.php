@@ -171,12 +171,20 @@ include '../header.php';
                 </div>
                 <div class="form-group clearfix">
                     <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
-                    <input
-                        id="recoverBtn"
-                        type="submit"
-                        formaction="/api/recover.php"
-                        value="Recover" class="btn btn-default pull-right hidden"
-                    />
+                    <div id="recovery" class="hidden">
+                        <input
+                            id="recoverBtn"
+                            type="submit"
+                            formaction="/api/recover.php"
+                            value="Recover" class="btn btn-default pull-right"
+                        />
+                        <div class="text-center">
+                            <label for="udfCheck">
+                                <input id="udfCheck" type="checkbox" name="udf">
+                                <span> use UDF</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div id='metrics' class="form-group hidden">
                         <small>
@@ -249,11 +257,11 @@ include '../header.php';
         });
 
         function showRecover() {
-            $('#recoverBtn').removeClass('hidden');
+            $('#recovery').removeClass('hidden');
         }
 
         function hideRecover() {
-            $('#recoverBtn').addClass('hidden');
+            $('#recovery').addClass('hidden');
             hideMetrics();
         }
 
@@ -301,6 +309,7 @@ include '../header.php';
                 visible,
                 threshold: parseFloat(form['threshold'].value, 10),
                 drop: parseFloat(form['drop'].value, 10),
+                udf: form['udf'].checked,
             };
             const url = form.action;
             const chart = $('#container').highcharts();

@@ -30,7 +30,7 @@ $explore_object = clone $_SESSION['drop'];
 
 include '../algebra.php';
 
-$use_udf = false;
+$use_udf = (bool)$json -> {'udf'};
 if ($use_udf)
 {
     // no return value, does the same changed in-place
