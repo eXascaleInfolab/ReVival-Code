@@ -37,6 +37,7 @@ select
     sys.epoch(datetime) * 1000 as tick
 from $table 
 where series_id=$s_id and datetime>=sys.epoch($start) and datetime<=sys.epoch($end)
+order by datetime
 ";
 $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
 $rows = (int)monetdb_num_rows($res);
