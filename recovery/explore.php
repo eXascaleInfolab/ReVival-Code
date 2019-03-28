@@ -149,61 +149,6 @@ include '../header.php';
                         } ?>
                     </select>
                 </div>
-                <!-- <div class="form-group">
-                    <label>Choice of reference time-series: <a data-container="body" data-toggle="popover"
-                                                               data-placement="top"
-                                                               data-content="Manual mode let's you manually choose the reference series. Globally correlated mode automatically takes the n most correlated series as reference series. ">
-                            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                        </a></label>
-                    <select id="modeSelect" name="mode" class="form-control" onchange="changeMode(this.value)">
-                        <option value="correlated" selected="selected">Automatically (based on correlation)</option>
-                        <option value="manual">Manually (select below)</option>
-                    </select>
-                </div> -->
-                <!-- <div id="manual_params" style="display: none;">
-                    <div class="form-group">
-                        <label>Reference time-series:
-                            <small>Multiple selection allowed (Ctrl + click)</small>
-                        </label>
-                        <select id="manual" name="reference_serie[]" multiple class="form-control">
-
-                            <?php foreach ($series as $id => $serie_title) {
-                                echo "<option value='" . $id . "'>" . $serie_title . "</option>";
-                            } ?>
-
-                        </select>
-                    </div>
-                </div> -->
-                <!-- <div id="correlated_params">
-                    <div class="form-group">
-                        <label>Amount of reference time-series:</label>
-                        <select id="amount" class="form-control" name="amount">
-                            <option value="2">2</option>
-                            <option value="3" selected>3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                </div> -->
-                <?php if (count($comparison_series) > 0) { ?>
-                    <?php foreach ($comparison_series as $id => $serie_title) {
-                    } ?>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" id="comparison" name="comparison_serie" value=" <?php echo $id; ?>">
-                            Use ground truth (if available)
-                        </label>
-                    </div>
-                <?php } ?>
-                <!-- <div class="form-group">
-                    <label>Time range:</label>
-                    <select class="form-control" id="range" name="range">
-                        <option value="7">week</option>
-                        <option value="30" selected>month</option>
-                        <option value="365">year</option>
-                        <option value="0">as selected in chart</option>
-                    </select>
-                </div> -->
                 <div class="form-group">
                     <label>Threshold epsilon for CD:</label>
                     <select class="form-control" id="threshold" name="threshold">
@@ -223,17 +168,8 @@ include '../header.php';
                         <option value="0.60">60%</option>
                         <option value="0.80">80%</option>
                     </select>
-                    <!-- <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3"> -->
                 </div>
-                <!-- <div id="ground" class="form-group hidden">
-                    <label for="groundTruth">
-                        <input id="groundTruth" type="checkbox" checked name="groundTruth">
-                        <span> Show Ground Truth</span>
-                    </label>
-                </div> -->
-                <!-- <button type="submit" name="action" value="apply" class="btn btn-default pull-left">Apply</button>
-                <button type="submit" name="action" value="recover"  class="btn btn-default pull-right">Recover</button> -->
-                <footer>
+                <div>
                     <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
                     <input
                         id="recoverBtn"
@@ -263,7 +199,7 @@ include '../header.php';
                             <span id="mae_norm"></span>
                         </label>
                     </div>
-                </footer>
+                </div>
             </form>
         </div>
     </div>
@@ -277,9 +213,6 @@ include '../header.php';
 
     // document ready
     $(function () {
-        // var norm = 1;
-        // var min, max;
-
         // object to hold chart settings mutations;
         let store = {
             norm: 1,
@@ -301,14 +234,6 @@ include '../header.php';
             };
             return fetch(new Request(url, options));
         };
-
-        function updateStore(args) {
-            store = {
-                ...store,
-                ...args,
-            };
-            return store;
-        }
 
         $('#applyBtn').on('click', function(e) {
             const form = e.target.form;
@@ -451,9 +376,11 @@ include '../header.php';
         });
 
        
-        function setNorm(i) {
-            const norm = i;
-            updateStore({norm});
+        function setNorm(norm) {
+            store = {
+                ...store,
+                norm
+            };
             const {min, max} = store;
             if (min === undefined || max === undefined) {
                 reloadEntireChart(norm);
@@ -581,7 +508,11 @@ include '../header.php';
             console.log('[afterSetExtremesHandler] -- ', e);
             const min = Math.round(e.min);
             const max = Math.round(e.max);
-            updateStore({min, max});
+            store = {
+                ...store,
+                min,
+                max,
+            };
             const { norm, flag } = store;
             // flag set after drop or recovery has being called
             // avoids overlaying new lines
@@ -614,7 +545,10 @@ include '../header.php';
 
             });
 
-            updateStore({series: storeSeries});
+            store = {
+                ...store,
+                series: storeSeries,
+            };
 
             // create the chart
             var chart = $('#container').highcharts('StockChart', {
@@ -631,7 +565,11 @@ include '../header.php';
                                 const min = firstSerie.xAxis.dataMin;
                                 const max = firstSerie.xAxis.dataMax;
                                 console.log(`[load] -- min=${min} max=${max}`);
-                                updateStore({min, max});
+                                store = {
+                                    ...store,
+                                    min,
+                                    max,
+                                };
                             } catch(err) {
                                 console.error(err);
                             }
