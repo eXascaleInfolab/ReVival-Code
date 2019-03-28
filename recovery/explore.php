@@ -169,7 +169,7 @@ include '../header.php';
                         <option value="0.80">80%</option>
                     </select>
                 </div>
-                <div>
+                <div class="form-group clearfix">
                     <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
                     <input
                         id="recoverBtn"
@@ -177,29 +177,32 @@ include '../header.php';
                         formaction="/api/recover.php"
                         value="Recover" class="btn btn-default pull-right hidden"
                     />
-                    <div id='metrics' class="hidden">
-                        <label for="">
-                            Runtime:
-                            <span id="runtime"> </span>
-                        </label><br/>
-                        <label for="">
-                            RMSE (raw):
-                            <span id="rmse"></span>
-                        </label><br/>
-                        <label for="">
-                            RMSE (normal):
-                            <span id="rmse_norm"></span>
-                        </label><br/>
-                        <label for="">
-                            MAE (raw):
-                            <span id="mae"></span>
-                        </label><br/>
-                        <label for="">
-                            MAE (normal):
-                            <span id="mae_norm"></span>
-                        </label>
-                    </div>
                 </div>
+                <div id='metrics' class="form-group hidden">
+                        <small>
+                            <label for="">
+                                Runtime:
+                                <span id="runtime"></span>
+                            </label>
+                            <br/>
+                            <label for="">
+                                RMSE (raw):
+                                <span id="rmse"></span>
+                            </label><br/>
+                            <label for="">
+                                RMSE (normal):
+                                <span id="rmseNorm"></span>
+                            </label><br/>
+                            <label for="">
+                                MAE (raw):
+                                <span id="mae"></span>
+                            </label><br/>
+                            <label for="">
+                                MAE (normal):
+                                <span id="maeNorm"></span>
+                            </label>
+                        </small>
+                    </div>
             </form>
         </div>
     </div>
@@ -251,7 +254,7 @@ include '../header.php';
 
         function hideRecover() {
             $('#recoverBtn').addClass('hidden');
-            $('#metrics').addClass('hidden');
+            hideMetrics();
         }
 
         function removeComputedLines() {
@@ -265,6 +268,22 @@ include '../header.php';
                     serie.remove(false);
                 }
             });
+        }
+
+        function showMetrics() {
+            $('#metrics').removeClass('hidden');
+        }
+
+        function hideMetrics() {
+            $('#metrics').addClass('hidden');
+        }
+
+        function setMetrics(runtime, rmse, rmse_normal, mae, mae_normal) {
+            $('#runtime').text(runtime || 'n/a');
+            $('#rmse').text(rmse || 'n/a');
+            $('#rmseNorm').text(rmse_normal || 'n/a');
+            $('#mae').text(mae || 'n/a');
+            $('#maeNorm').text(mae_normal || 'n/a');
         }
 
         $('#retrieveForm').on('submit', function(e) {
@@ -296,7 +315,12 @@ include '../header.php';
                 .then((json) => {
                     console.log(json);
                     removeComputedLines();
-                    setSeries(chart, json.series, json.rmse, json.runtime, json.rmse_norm, json.mae, json.mae_norm);
+                    const {runtime, rmse, rmse_norm, mae, mae_norm} = json;
+                    if (runtime || rmse || rmse_norm || mae || mae_norm) {
+                        setMetrics(runtime, rmse, rmse_norm, mae, mae_norm);
+                        showMetrics();
+                    }
+                    setSeries(chart, json.series);
                     showRecover();
                     // hack
                     // this is a hack to avoid another api call in afterSetExtremesHandler
@@ -447,15 +471,6 @@ include '../header.php';
                     }, false);
                 }
             }
-            // chart.redraw();
-            // if (runtime) { // this should be enough to establish that recovery was performed
-            //     $('#metrics').removeClass('hidden');
-            //     $('#runtime').text(runtime);
-            //     if (rmse) $('#rmse').text(rmse); else $('#rmse').text("N/A");
-            //     if (rmse_normal) $('#rmse_norm').text(rmse_normal); else $('#rmse_norm').text("N/A");
-            //     if (mae) $('#mae').text(mae); else $('#mae').text("N/A");
-            //     if (mae_normal) $('#mae_norm').text(mae_normal); else $('#mae_norm').text("N/A");
-            // }
         }
 
         function loadChart(query) {
