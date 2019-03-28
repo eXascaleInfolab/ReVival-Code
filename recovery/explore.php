@@ -277,12 +277,12 @@ include '../header.php';
 
     // document ready
     $(function () {
-        var norm = 1;
-        var min, max;
+        // var norm = 1;
+        // var min, max;
 
         // object to hold chart settings mutations;
         let store = {
-            norm,
+            norm: 1,
         };
 
         /**
@@ -337,10 +337,9 @@ include '../header.php';
             toBeRemoved.forEach((serie) => {
                 if (serie !== undefined) {
                     console.log(`removing ${serie.name} loop 1`);
-                    serie.remove();
+                    serie.remove(false);
                 }
             });
-            chart.redraw();
         }
 
         $('#retrieveForm').on('submit', function(e) {
@@ -372,8 +371,20 @@ include '../header.php';
                 .then((json) => {
                     console.log(json);
                     removeComputedLines();
-                    redraw(json.series, json.rmse, json.runtime, json.rmse_norm, json.mae, json.mae_norm);
+                    setSeries(chart, json.series, json.rmse, json.runtime, json.rmse_norm, json.mae, json.mae_norm);
                     showRecover();
+                    // hack
+                    // this is a hack to avoid another api call in afterSetExtremesHandler
+                    store = {
+                        ...store,
+                        flag: true,
+                    };
+                    chart.redraw();
+                    store = {
+                        ...store,
+                        flag: undefined,
+                    };
+                    // end hack
                 })
                 .catch(err => console.error(err))
                 .finally(() => chart.hideLoading());
@@ -403,7 +414,6 @@ include '../header.php';
 
         $('#rawButton').click(function () {
             setNorm(0);
-            removeComputedLines();
             $('#zButton').removeClass('active');
             $('#minMaxButton').removeClass('active');
             $('#rawButton').addClass('active');
@@ -411,7 +421,6 @@ include '../header.php';
 
         $('#zButton').click(function () {
             setNorm(1);
-            removeComputedLines();
             $('#rawButton').removeClass('active');
             $('#minMaxButton').removeClass('active');
             $('#zButton').addClass('active');
@@ -419,7 +428,6 @@ include '../header.php';
 
         $('#minMaxButton').click(function () {
             setNorm(2);
-            removeComputedLines();
             $('#rawButton').removeClass('active');
             $('#zButton').removeClass('active');
             $('#minMaxButton').addClass('active');
@@ -444,23 +452,21 @@ include '../header.php';
 
        
         function setNorm(i) {
-            norm = i;
+            const norm = i;
             updateStore({norm});
-            // if no extremes set => load entire range
-            if (min == null || max == null) {
-                reloadEntireChart();
-            }
-            // otherwise =>
-            else {
-                reloadChartWithExtremes(min, max);
+            const {min, max} = store;
+            if (min === undefined || max === undefined) {
+                reloadEntireChart(norm);
+            } else {
+                reloadChartWithExtremes(min, max, norm);
             }
         }
 
-        function redraw(series, rmse=null, runtime=null, rmse_normal=null, mae=null, mae_normal=null) {
-            const chart = $('#container').highcharts();
+        function setSeries(chart, series, rmse=null, runtime=null, rmse_normal=null, mae=null, mae_normal=null) {
+            // adding continues lines
             series.forEach((serie, i) => {
                 if(chart.series[i]) {
-                    chart.series[i].setData(serie.points);
+                    chart.series[i].setData(serie.points, false);
                 }
             });
            
@@ -476,7 +482,7 @@ include '../header.php';
                 const data = serie.ground;
                 if (chartSerie !== undefined) {
                     console.log(`setData ${serie.title}-ground`);
-                    chartSerie.setData(data);
+                    chartSerie.setData(data, false);
                 } else {
                     console.log(`adding ${serie.title}-ground`);
                     const color = chart.get(parseInt(serie.id, 10)).color; // maintain color
@@ -486,7 +492,7 @@ include '../header.php';
                         color,
                         dashStyle: 'ShortDot',
                         data, 
-                    });
+                    }, false);
                 }
             }
             const recovered = series.filter((next) => next.recovered !== undefined && next.ground !== undefined);
@@ -501,7 +507,7 @@ include '../header.php';
                 const data = serie.recovered;
                 if (chartSerie !== undefined) {
                     console.log(`setData ${serie.title}-recovered`);
-                    chartSerie.setData(data);
+                    chartSerie.setData(data, false);
                 } else {
                     console.log(`adding ${serie.title}-recovered`);
                     const color = 'red';
@@ -511,17 +517,18 @@ include '../header.php';
                         color,
                         dashStyle: 'ShortDot',
                         data, 
-                    });
+                    }, false);
                 }
             }
-            if (runtime) { // this should be enough to establish that recovery was performed
-                $('#metrics').removeClass('hidden');
-                $('#runtime').text(runtime);
-                if (rmse) $('#rmse').text(rmse); else $('#rmse').text("N/A");
-                if (rmse_normal) $('#rmse_norm').text(rmse_normal); else $('#rmse_norm').text("N/A");
-                if (mae) $('#mae').text(mae); else $('#mae').text("N/A");
-                if (mae_normal) $('#mae_norm').text(mae_normal); else $('#mae_norm').text("N/A");
-            }
+            // chart.redraw();
+            // if (runtime) { // this should be enough to establish that recovery was performed
+            //     $('#metrics').removeClass('hidden');
+            //     $('#runtime').text(runtime);
+            //     if (rmse) $('#rmse').text(rmse); else $('#rmse').text("N/A");
+            //     if (rmse_normal) $('#rmse_norm').text(rmse_normal); else $('#rmse_norm').text("N/A");
+            //     if (mae) $('#mae').text(mae); else $('#mae').text("N/A");
+            //     if (mae_normal) $('#mae_norm').text(mae_normal); else $('#mae_norm').text("N/A");
+            // }
         }
 
         function loadChart(query) {
@@ -529,22 +536,24 @@ include '../header.php';
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
             $.getJSON(query, function (data) {
                 var explore_object = data[0];
-                console.log('RESPONSE: ', explore_object);
+                console.log('Explore Query Response: ', explore_object);
                 explore_object.series.forEach(function (series, i) {
-                    chart.series[i].setData(series.points);
+                    chart.series[i].setData(series.points, false);
                 });
                 chart.hideLoading();
                 hideRecover();
+                removeComputedLines();
+                chart.redraw();
             });
         }
 
     
-        function reloadChartWithExtremes(min, max) {
+        function reloadChartWithExtremes(min, max, norm) {
             var query = 'explore_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&start=' + min + '&end=' + max + '&callback=?';
             loadChart(query);
         }
 
-        function reloadEntireChart() {
+        function reloadEntireChart(norm) {
             var query = 'explore_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?';
             loadChart(query);
         }
@@ -566,23 +575,23 @@ include '../header.php';
         }
 
         /**
-         * Load new data depending on the selected min and max
+         * Updates min and max
          */
         function afterSetExtremesHandler(e) {
             console.log('[afterSetExtremesHandler] -- ', e);
-            min = Math.round(e.min);
-            max = Math.round(e.max);
-            store = {
-                ...store,
-                min,
-                max,
-            };
-            removeComputedLines();
-            reloadChartWithExtremes(min, max);
+            const min = Math.round(e.min);
+            const max = Math.round(e.max);
+            updateStore({min, max});
+            const { norm, flag } = store;
+            // flag set after drop or recovery has being called
+            // avoids overlaying new lines
+            if (flag === undefined) {
+                reloadChartWithExtremes(min, max, norm);
+            }
         }
 
         // See source code from the JSONP handler at https://github.com/highcharts/highcharts/blob/master/samples/data/from-sql.php
-        $.getJSON('explore_query.php?dataset=<?php echo $dataset; ?>&norm=' + norm + '&callback=?', function (data) {
+        $.getJSON('explore_query.php?dataset=<?php echo $dataset; ?>&norm=' + store.norm + '&callback=?', function (data) {
             var explore_object = data[0];
             var renderedSeries = [];
             var visibility = true;
@@ -616,9 +625,12 @@ include '../header.php';
                     events: {
                         load: function (e) {
                             try {
+                                console.log('[load]')
+                                console.log(e);
                                 const firstSerie = e.target.series[0]
                                 const min = firstSerie.xAxis.dataMin;
                                 const max = firstSerie.xAxis.dataMax;
+                                console.log(`[load] -- min=${min} max=${max}`);
                                 updateStore({min, max});
                             } catch(err) {
                                 console.error(err);

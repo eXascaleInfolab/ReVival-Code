@@ -39,7 +39,7 @@ from $table
 where series_id=$s_id and datetime>=sys.epoch($start) and datetime<=sys.epoch($end)
 ";
 $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
-$rows = monetdb_num_rows($res);
+$rows = (int)monetdb_num_rows($res);
 
 $time_stamps = array();
 while ( $row = monetdb_fetch_assoc($res) )
