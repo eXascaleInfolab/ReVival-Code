@@ -142,12 +142,46 @@ include '../header.php';
                 <input type="hidden" name="start" id="hiddenMin" value="">
                 <input type="hidden" name="end" id="hiddenMax" value="">
                 <div class="form-group">
-                    <label>Recover missing values for:</label>
-                    <select class="form-control" id="base" name="base_serie" multiple>
+                    <!-- <label>Recover missing values for:</label> -->
+                    <!-- <select class="form-control" id="base" name="base_serie" multiple>
                         <?php foreach ($series as $id => $serie_title) {
                             echo "<option value='" . $id . "'>" . $serie_title . "</option>";
                         } ?>
-                    </select>
+                    </select> -->
+                    <div class="accordion" id="seriesAccordion">
+                        <div class="card dropdown">
+                            <div class="card-header" id="headingOne">
+                            <h2 class="mb-0">
+                                <button
+                                    class="btn collapsed dropdown-toggle"
+                                    type="button"
+                                    data-toggle="collapse"
+                                    data-target="#collapseOne"
+                                    aria-expanded="false"
+                                    aria-controls="collapseOne"
+                                >
+                                    <span>Recover missing values for: <i class="fa fa-chevron-down"></i></span>
+                                </button>
+                            </h2>
+                            </div>
+                            <div id="collapseOne" class="collapse in" aria-labelledby="headingOne" data-parent="#seriesAccordion">
+                                <div class="card-body" style="max-height: 150px; overflow: scroll;">
+                                    <ul style="list-style: none;">
+                                        <?php 
+                                            foreach ($series as $id => $serie_title) {
+                                                echo "<li>
+                                                    <label for=\"$id\">
+                                                        <input id=\"$id\" type=\"checkbox\" name=\"series\" value=\"$id\"/>
+                                                        <span> $serie_title</span>
+                                                    </label>
+                                                </li>";
+                                            } 
+                                        ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Threshold epsilon for CD:</label>
@@ -170,7 +204,13 @@ include '../header.php';
                     </select>
                 </div>
                 <div class="form-group clearfix">
-                    <input id="applyBtn" type="submit" formaction="/api/drop.php" value="Apply" class="btn btn-default pull-left" />
+                    <input
+                        id="applyBtn"
+                        type="submit"
+                        formaction="/api/drop.php"
+                        value="Apply"
+                        class="btn btn-default pull-left"
+                    />
                     <div id="recovery" class="hidden">
                         <input
                             id="recoverBtn"
@@ -297,14 +337,14 @@ include '../header.php';
         $('#retrieveForm').on('submit', function(e) {
             e.preventDefault();
             const form = e.target;
-            const selectedOptions = form['base_serie'].selectedOptions;
-            const series = Array.from(selectedOptions).map(next => parseInt(next.value, 10));
+            const selectedSeries = Array.from(form['series']).filter((next) => next.checked);
+            const series = selectedSeries.map((next) => parseInt(next.value, 10));
             const visible = store.series.filter((next) => next.visible);
-            // const ground = form['groundTruth'].checked;
+            const { min, max, norm } = store;
             const data = {
-                norm: store.norm,
-                start: store.min,
-                end: store.max,
+                norm,
+                start: min,
+                end: max,
                 series,
                 visible,
                 threshold: parseFloat(form['threshold'].value, 10),
