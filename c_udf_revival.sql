@@ -32,7 +32,7 @@ LANGUAGE CPP
     #include <cmath>
     #include <map>
     #define CENTROID_LIBRARY_PATH "libIncCD.so"
-
+    
     //-- verify basic integrity of the data
     if (dt_in.count != sid_in.count || dt_in.count != tsval.count)
     {
@@ -155,17 +155,20 @@ LANGUAGE CPP
 
 -- example
 
+SET SCHEMA data;
+
 -- selector for a few time series, they already contain nulls in this table
 SELECT series_id, sys.epoch(datetime) as timeval, value FROM hourly
 WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
-    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+ORDER BY datetime;
 
 -- same selector, but with a pass-through of centroid_recovery_revival/5 to recover all nulls
 SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_recovery_revival((
     SELECT series_id, datetime, value, 1, 0.01 FROM hourly
     WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
         AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
-));
+)) ORDER BY datetime;
 
 -- output of the example:
 
@@ -266,7 +269,8 @@ SELECT series_id, sys.epoch(datetime) as timeval,
     END AS value
 FROM hourly
 WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303 OR false)
-    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+ORDER BY datetime;
 
 -- all recovered
 SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_recovery_revival((
@@ -280,7 +284,7 @@ SELECT series_id, sys.epoch(datetime) as timeval, value_recovered FROM centroid_
     FROM hourly
     WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
         AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
-));
+)) ORDER BY datetime;
 
 -- version that also returns runtime
 
@@ -300,8 +304,7 @@ LANGUAGE CPP
     #include <cmath>
     #include <map>
     #include <chrono>
-    //#define CENTROID_LIBRARY_PATH "libIncCD.so"
-    #define CENTROID_LIBRARY_PATH "/home/zakhar/MVR/CentroidCentral/CD_tool/cmake-build-debug/libIncCD.so"
+    #define CENTROID_LIBRARY_PATH "libIncCD.so"
 
     //-- verify basic integrity of the data
     if (dt_in.count != sid_in.count || dt_in.count != tsval.count)
@@ -437,14 +440,15 @@ SET SCHEMA data;
 -- selector for a few time series, they already contain nulls in this table
 SELECT series_id, sys.epoch(datetime) as timeval, value FROM hourly
 WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
-    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+ORDER BY datetime;
 
 -- same selector, but with a pass-through of centroid_recovery_revival_runtime/5 to recover all nulls
 SELECT series_id, sys.epoch(datetime) as timeval, value_recovered, runtime FROM sys.centroid_recovery_revival_runtime((
     SELECT series_id, datetime, value, 1, 0.01 FROM hourly
     WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
         AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
-));
+)) ORDER BY datetime;
 
 -- selector for a few time series, but afticially changing the values (can be set to null)
 SELECT series_id, sys.epoch(datetime) as timeval,
@@ -455,7 +459,8 @@ SELECT series_id, sys.epoch(datetime) as timeval,
     END AS value
 FROM hourly
 WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303 OR false)
-    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000));
+    AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
+ORDER BY datetime;
 
 -- all recovered
 SELECT series_id, sys.epoch(datetime) as timeval, value_recovered, runtime FROM sys.centroid_recovery_revival_runtime((
@@ -469,4 +474,4 @@ SELECT series_id, sys.epoch(datetime) as timeval, value_recovered, runtime FROM 
     FROM hourly
     WHERE (series_id = 2112 OR series_id = 2181 OR series_id = 2303)
         AND (datetime >= sys.epoch(126554400000) AND datetime <= sys.epoch(126748800000))
-));
+)) ORDER BY datetime;
