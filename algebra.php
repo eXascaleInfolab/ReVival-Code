@@ -239,8 +239,9 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
             is_null($explore_object->{'series'}[$idx]["ground"][$idx_l][1]) ? null : floatval($row["value_recovered"])
         );
     }
+    $runtime /= 1000.0;
     $explore_object -> {'runtime_q'} = (microtime(true) - $start_compute) * 1000;
-    $explore_object -> {'runtime'} = $runtime;
+    $explore_object -> {'runtime'} = "$runtime ms";
 
     if ($normtype == 0 && !is_null($conn))
     {
@@ -378,6 +379,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table, $visi
         $x = RMV_all(trsp($x), $threshold, $n, false);
     }
     $time_elapsed = (microtime(true) - $start_compute) * 1000;
+    $time_elapsed = intval($time_elapsed) / 1000.0;
     $x = $x[0];
 
     $RMSE = 0.0;
@@ -460,19 +462,27 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table, $visi
         $recov_response->{"series"}[] = $newseries;
     }
 
-    $recov_response->{"runtime"} = $time_elapsed;
+    $recov_response->{"runtime"} = "$time_elapsed ms";
     if ($normtype == 0 && !is_null($conn))
     {
-        $recov_response->{"rmse"} = sqrt($RMSE / $counter);
-        $recov_response->{"mae"} = $MAE / $counter;
+        $RMSE = intval(sqrt($RMSE / $counter) * 1000) / 1000.0;
+        $MAE = intval(($MAE / $counter) * 1000) / 1000.0;
+        $RMSE_norm = intval(sqrt($RMSE_norm / $counter) * 1000) / 1000.0;
+        $MAE_norm = intval(($MAE_norm / $counter) * 1000) / 1000.0;
 
-        $recov_response->{"rmse_norm"} = sqrt($RMSE_norm / $counter);
-        $recov_response->{"mae_norm"} = $MAE_norm / $counter;
+        $recov_response->{"rmse"} = $RMSE;
+        $recov_response->{"mae"} = $MAE;
+
+        $recov_response->{"rmse_norm"} = $RMSE_norm;
+        $recov_response->{"mae_norm"} = $MAE_norm;
     }
     else
     {
-        $recov_response->{"rmse_norm"} = sqrt($RMSE / $counter);
-        $recov_response->{"mae_norm"} = $MAE / $counter;
+        $RMSE = intval(sqrt($RMSE / $counter) * 1000) / 1000.0;
+        $MAE = intval(($MAE / $counter) * 1000) / 1000.0;
+
+        $recov_response->{"rmse_norm"} = $RMSE;
+        $recov_response->{"mae_norm"} = $MAE;
     }
 
     return $recov_response;
