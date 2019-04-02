@@ -290,16 +290,24 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
 
     if ($normtype == 0 && !is_null($conn))
     {
-        $explore_object->{"rmse"} = sqrt($RMSE / $counter);
-        $explore_object->{"mae"} = $MAE / $counter;
+        $RMSE = intval(sqrt($RMSE / $counter) * 1000) / 1000.0;
+        $MAE = intval(($MAE / $counter) * 1000) / 1000.0;
+        $RMSE_norm = intval(sqrt($RMSE_norm / $counter) * 1000) / 1000.0;
+        $MAE_norm = intval(($MAE_norm / $counter) * 1000) / 1000.0;
 
-        $explore_object->{"rmse_norm"} = sqrt($RMSE_norm / $counter);
-        $explore_object->{"mae_norm"} = $MAE_norm / $counter;
+        $explore_object->{"rmse"} = $RMSE;
+        $explore_object->{"mae"} = $MAE;
+
+        $explore_object->{"rmse_norm"} = $RMSE_norm;
+        $explore_object->{"mae_norm"} = $MAE_norm;
     }
     else
     {
-        $explore_object->{"rmse_norm"} = sqrt($RMSE / $counter);
-        $explore_object->{"mae_norm"} = $MAE / $counter;
+        $RMSE = intval(sqrt($RMSE / $counter) * 1000) / 1000.0;
+        $MAE = intval(($MAE / $counter) * 1000) / 1000.0;
+
+        $explore_object->{"rmse_norm"} = $RMSE;
+        $explore_object->{"mae_norm"} = $MAE;
     }
 }
 
