@@ -490,6 +490,7 @@ include '../header.php';
                         id: serieId,
                         name: `${serie.title}-ground`,
                         color,
+                        visible: false,
                         dashStyle: 'ShortDot',
                         data, 
                     }, false);
