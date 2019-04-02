@@ -154,6 +154,9 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
  */
 function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $visible, $start, $end)
 {
+    $m = count($explore_object->{"series"}[0]["points"]);    // number of values per series: rows in the matrix
+    $n = count($explore_object->{"series"}); // number of series
+
     $series_cases = "";
     $series_filter = "";
 
@@ -209,7 +212,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
     */
 
     $qry = "
-    SELECT series_id, sys.epoch(datetime) * 1000 as timeval, value_recovered FROM sys.centroid_recovery_revival((
+    SELECT series_id, sys.epoch(datetime) * 1000 as timeval, value_recovered, runtime FROM sys.centroid_recovery_revival_runtime((
         SELECT series_id, datetime,
             CASE
                 $series_cases
@@ -226,6 +229,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
     $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
 
     while ($row = monetdb_fetch_assoc($res)) {
+        $runtime = $row["runtime"];
         $idx = $series_dict["" . $row["series_id"]][0];
         $idx_l = $series_dict["" . $row["series_id"]][1];
         $series_dict["" . $row["series_id"]][1] += 1;
@@ -235,9 +239,67 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
             is_null($explore_object->{'series'}[$idx]["ground"][$idx_l][1]) ? null : floatval($row["value_recovered"])
         );
     }
-    $explore_object -> {'runtime'} = (microtime(true) - $start_compute) * 1000;
+    $explore_object -> {'runtime_q'} = (microtime(true) - $start_compute) * 1000;
+    $explore_object -> {'runtime'} = $runtime;
 
-    //todo: add mse/mae
+    if ($normtype == 0 && !is_null($conn))
+    {
+        $stddev = array();
+
+        for ($j = 0; $j < $n; $j++)
+        {
+            $stat = get_statistics($conn, $table, $explore_object->{"series"}[$j]["id"]);
+            $stddev[] = $stat->{"stddev"};
+        }
+    }
+
+    $RMSE = 0.0;
+    $RMSE_norm = 0.0;
+    $MAE = 0.0;
+    $MAE_norm = 0.0;
+    $counter = 0;
+    for ($j = 0; $j < $n; $j++)
+    {
+        for ($i = 0; $i < $m; $i++)
+        {
+            if (is_null($explore_object->{"series"}[$j]["points"][$i][1]))
+            {
+                $gr = $explore_object->{"series"}[$j]["ground"][$i][1];
+
+                if (!isset($gr) || is_null($gr))
+                {
+                    continue;
+                }
+
+                $delta = $explore_object->{"series"}[$j]["recovered"][$i][1] - $gr;
+
+                $RMSE += $delta * $delta;
+                $MAE += abs($delta);
+
+                if ($normtype == 0 && !is_null($conn))
+                {
+                    $RMSE_norm += ($delta * $delta) / ($stddev[$j] * $stddev[$j]);
+                    $MAE_norm += abs($delta) / $stddev[$j];
+                }
+
+                $counter++;
+            }
+        }
+    }
+
+    if ($normtype == 0 && !is_null($conn))
+    {
+        $explore_object->{"rmse"} = sqrt($RMSE / $counter);
+        $explore_object->{"mae"} = $MAE / $counter;
+
+        $explore_object->{"rmse_norm"} = sqrt($RMSE_norm / $counter);
+        $explore_object->{"mae_norm"} = $MAE_norm / $counter;
+    }
+    else
+    {
+        $explore_object->{"rmse_norm"} = sqrt($RMSE / $counter);
+        $explore_object->{"mae_norm"} = $MAE / $counter;
+    }
 }
 
 /** Performs the recovery of all missing values in all time series stored in the session object.
