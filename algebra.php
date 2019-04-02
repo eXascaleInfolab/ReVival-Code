@@ -222,7 +222,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         FROM $table
         WHERE ($series_filter false)
             AND (datetime >= sys.epoch($start) AND datetime <= sys.epoch($end))
-    ));
+    )) ORDER BY datetime;
     ";
 
     $start_compute = microtime(true);
