@@ -26,9 +26,44 @@ $threshold = (float)$json -> {'threshold'};
 $series_ids = $json -> {'series'};
 $visible = $json -> {'visible'};
 $table = Utils::getTableName($start, $end);
+$reference = $json->{'reference'};
 
 // has the cached series with drop values from /api/drop.php
 $explore_object = clone $_SESSION['drop'];
+
+//set up references
+
+$visible = array();
+$keeptrack = array();
+
+foreach ($reference as $sid)
+{
+    $visObj = new stdClass();
+    $visObj->{'id'} = $sid;
+    $visObj->{'name'} = "ANY";
+    $visObj->{'visible'} = true;
+    $visible[] = $visObj;
+    $keeptrack[] = $sid;
+}
+
+foreach ($explore_object->{"series"} as $rseries) {
+    $sid = $rseries["id"];
+
+    if (isset($rseries["ground"]) || count($reference) == 0)
+    {
+        if (!in_array($sid, $keeptrack))
+        {
+            $visObj = new stdClass();
+            $visObj->{'id'} = $sid;
+            $visObj->{'name'} = $rseries["name"];
+            $visObj->{'visible'} = true;
+            $visible[] = $visObj;
+            $keeptrack[] = $sid;
+        }
+    }
+}
+
+//end: set up references
 
 include '../algebra.php';
 

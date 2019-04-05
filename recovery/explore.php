@@ -184,6 +184,42 @@ include '../header.php';
                     </div>
                 </div>
                 <div class="form-group">
+                    <div class="accordion" id="seriesAccordion2">
+                        <div class="card dropdown">
+                            <div class="card-header" id="headingTwo">
+                                <h2 class="mb-0">
+                                    <button
+                                            class="btn collapsed dropdown-toggle"
+                                            type="button"
+                                            data-toggle="collapse"
+                                            data-target="#collapseTwo"
+                                            aria-expanded="false"
+                                            aria-controls="collapseTwo"
+                                    >
+                                        <span>Use the following time series for reference: <i class="fa fa-chevron-down"></i></span>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseTwo" class="collapse in" aria-labelledby="headingTwo" data-parent="#seriesAccordion2">
+                                <div class="card-body" style="max-height: 150px; overflow: scroll;">
+                                    <ul style="list-style: none;">
+                                        <?php
+                                        foreach ($series as $id => $serie_title) {
+                                            echo "<li>
+                                                    <label for=\"$id-ref\">
+                                                        <input id=\"$id\" type=\"checkbox\" name=\"reference\" value=\"$id\"/>
+                                                        <span> $serie_title</span>
+                                                    </label>
+                                                </li>";
+                                        }
+                                        ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label>Threshold epsilon for CD:</label>
                     <select class="form-control" id="threshold" name="threshold">
                         <option>0.1</option>
@@ -338,7 +374,9 @@ include '../header.php';
             e.preventDefault();
             const form = e.target;
             const selectedSeries = Array.from(form['series']).filter((next) => next.checked);
+            const selectedRefSeries = Array.from(form['reference']).filter((next) => next.checked);
             const series = selectedSeries.map((next) => parseInt(next.value, 10));
+            const refSeries = selectedRefSeries.map((next) => parseInt(next.value, 10));
             const visible = store.series.filter((next) => next.visible);
             const { min, max, norm } = store;
             const data = {
@@ -350,9 +388,15 @@ include '../header.php';
                 threshold: parseFloat(form['threshold'].value, 10),
                 drop: parseFloat(form['drop'].value, 10),
                 udf: form['udf'].checked,
+                reference: refSeries,
             };
             const url = form.action;
             const chart = $('#container').highcharts();
+
+            const names = selectedSeries.map((s, i) => store.series.filter(ss => ss.id == s.value)[0].name);
+            const missingings = chart.series.filter((s,i) => names.indexOf(s.name) > -1);
+            missingings.forEach((s,i) => s.setVisible(true));
+
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
             requestSeries(url, data)
                 .then(response => {
@@ -564,6 +608,10 @@ include '../header.php';
                 }
             }
             console.log(`${e.target.name} click!`);
+
+            const chart = $('#container').highcharts();
+            const derivatives = chart.series.filter((s,i) => s.name === (e.target.name + "-ground") || s.name === (e.target.name + "-recovered"));
+            derivatives.forEach((s,i) => s.setVisible(false));
         }
 
         /**
