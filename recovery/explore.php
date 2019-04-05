@@ -603,6 +603,10 @@ include '../header.php';
                 }
             }
             console.log(`${e.target.name} click!`);
+
+            const chart = $('#container').highcharts();
+            const derivatives = chart.series.filter((s,i) => s.name === (e.target.name + "-ground") || s.name === (e.target.name + "-recovered"));
+            derivatives.forEach((s,i) => s.setVisible(false));
         }
 
         /**
