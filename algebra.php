@@ -428,7 +428,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table, $visi
         $x = RMV_all(trsp($x), $threshold, $n, false);
     }
     $time_elapsed = (microtime(true) - $start_compute) * 1000;
-    $time_elapsed = intval($time_elapsed) / 1000.0;
+    $time_elapsed = intval($time_elapsed * 1000) / 1000.0;
     $x = $x[0];
 
     $RMSE = 0.0;
