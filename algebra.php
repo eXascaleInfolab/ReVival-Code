@@ -163,6 +163,8 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
     $series_dict = array();
     $counter = 0;
 
+    $kinda_m = 0;
+
     foreach ($explore_object->{"series"} as $rseries)
     {
         $this_id = $rseries["id"];
@@ -174,6 +176,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
             $status = "missing";
             $series_filter .= "series_id = $this_id OR ";
             $explore_object->{'series'}[$counter]["recovered"] = array(); //for the future
+            $kinda_m++;
         }
         else
         {
@@ -183,6 +186,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
                 {
                     $status = "reference";
                     $series_filter .= "series_id = $this_id OR ";
+                    $kinda_m++;
                     break;
                 }
             }
@@ -196,6 +200,21 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         }
 
         $counter++;
+    }
+
+    $k = 0;
+
+    if ($kinda_m == 2 || $kinda_m == 3)
+    {
+        $k = 1;
+    }
+    else if ($kinda_m == 4 || $kinda_m == 5)
+    {
+        $k = 2;
+    }
+    else
+    {
+        $k = 3;
     }
 
     /*
@@ -218,7 +237,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
                 $series_cases
                 ELSE value
             END AS value,
-            0, $threshold
+            $k, $threshold
         FROM $table
         WHERE ($series_filter false)
             AND (datetime >= sys.epoch($start) AND datetime <= sys.epoch($end))
@@ -425,7 +444,7 @@ function recover_all($conn, $sessionobject, $threshold, $normtype, $table, $visi
     else
     {
         $start_compute = microtime(true);
-        $x = RMV_all(trsp($x), $threshold, $n, false);
+        $x = RMV_all(trsp($x), $threshold, $n, true);
     }
     $time_elapsed = (microtime(true) - $start_compute) * 1000;
     $time_elapsed = intval($time_elapsed * 1000) / 1000.0;
