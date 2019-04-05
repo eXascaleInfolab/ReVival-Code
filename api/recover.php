@@ -1,8 +1,11 @@
 <?php session_start();
+
 include '../logger.php';
 include '../connect.php';
 
 include '../src/utils.php';
+
+error_reporting(0);
 use ReVival\utils;
 
 // required headers
