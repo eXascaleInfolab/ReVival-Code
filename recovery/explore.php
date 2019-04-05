@@ -392,6 +392,11 @@ include '../header.php';
             };
             const url = form.action;
             const chart = $('#container').highcharts();
+
+            const names = selectedSeries.map((s, i) => store.series.filter(ss => ss.id == s.value)[0].name);
+            const missingings = chart.series.filter((s,i) => names.indexOf(s.name) > -1);
+            missingings.forEach((s,i) => s.setVisible(true));
+
             chart.showLoading('<img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif">');
             requestSeries(url, data)
                 .then(response => {
