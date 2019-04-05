@@ -5,8 +5,6 @@ include '../connect.php';
 include '../src/utils.php';
 use ReVival\utils;
 
-$table = Utils::getTableName($start, $end);
-
 // required headers
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -24,6 +22,7 @@ $ground_thruth = (bool)$json -> {'ground'};
 $threshold = (float)$json -> {'threshold'};
 $series_ids = $json -> {'series'};
 $visible = $json -> {'visible'};
+$table = Utils::getTableName($start, $end);
 
 // has the cached series with drop values from /api/drop.php
 $explore_object = clone $_SESSION['drop'];
