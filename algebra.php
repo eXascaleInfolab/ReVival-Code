@@ -243,7 +243,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
     $explore_object -> {'runtime_q'} = (microtime(true) - $start_compute) * 1000;
     $explore_object -> {'runtime'} = "$runtime ms";
 
-    if ($normtype == 0 && !is_null($conn))
+    if (!is_null($conn))
     {
         $mean = array();
         $stddev = array();
@@ -266,17 +266,14 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         {
             for ($i = 0; $i < $m; $i++)
             {
-                if (is_null($explore_object->{"series"}[$j]["points"][$i][1]))
+                $recval = $explore_object->{"series"}[$j]["recovered"][$i][1];
+
+                if (!isset($recval) || is_null($recval))
                 {
-                    $recval = $explore_object->{"series"}[$j]["recovered"][$i][1];
-
-                    if (!isset($recval) || is_null($recval))
-                    {
-                        continue;
-                    }
-
-                    $explore_object->{"series"}[$j]["recovered"][$i][1] = ($recval - $mean[$j]) / $stddev[$j];
+                    continue;
                 }
+
+                $explore_object->{"series"}[$j]["recovered"][$i][1] = ($recval - $mean[$j]) / $stddev[$j];
             }
         }
     }
@@ -286,17 +283,14 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         {
             for ($i = 0; $i < $m; $i++)
             {
-                if (is_null($explore_object->{"series"}[$j]["points"][$i][1]))
+                $recval = $explore_object->{"series"}[$j]["recovered"][$i][1];
+
+                if (!isset($recval) || is_null($recval))
                 {
-                    $recval = $explore_object->{"series"}[$j]["recovered"][$i][1];
-
-                    if (!isset($recval) || is_null($recval))
-                    {
-                        continue;
-                    }
-
-                    $explore_object->{"series"}[$j]["recovered"][$i][1] = ($recval - $min[$j]) / ($max[$j] - $min[$j]);
+                    continue;
                 }
+
+                $explore_object->{"series"}[$j]["recovered"][$i][1] = ($recval - $min[$j]) / ($max[$j] - $min[$j]);
             }
         }
     }
