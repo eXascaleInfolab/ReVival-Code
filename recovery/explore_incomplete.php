@@ -427,7 +427,7 @@ include '../header.php';
                     type: 'datetime',
                     minRange: 24 * 3600 * 1000, // one day
                     labels : {
-                        style: { "fontSize" : "15px" }//, "font-weight" : "bold" }
+                        style: { "fontSize" : "25px" }//, "font-weight" : "bold" }
                     }
                 },
 
@@ -442,7 +442,7 @@ include '../header.php';
                 yAxis: {
                     opposite: true,
                     labels : {
-                        style : { "fontSize" : "15px" , "font-weight" : "bold" }
+                        style : { "fontSize" : "25px" , "font-weight" : "bold" }
                     }
                 },
                 credits: {

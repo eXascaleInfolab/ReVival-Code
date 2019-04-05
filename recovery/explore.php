@@ -165,7 +165,7 @@ include '../header.php';
                             </h2>
                             </div>
                             <div id="collapseOne" class="collapse in" aria-labelledby="headingOne" data-parent="#seriesAccordion">
-                                <div class="card-body" style="max-height: 150px; overflow: scroll;">
+                                <div class="card-body" style="max-height: 300px; overflow: scroll;">
                                     <ul style="list-style: none;">
                                         <?php 
                                             foreach ($series as $id => $serie_title) {
@@ -200,8 +200,8 @@ include '../header.php';
                                     </button>
                                 </h2>
                             </div>
-                            <div id="collapseTwo" class="collapse in" aria-labelledby="headingTwo" data-parent="#seriesAccordion2">
-                                <div class="card-body" style="max-height: 150px; overflow: scroll;">
+                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#seriesAccordion2">
+                                <div class="card-body" style="max-height: 300px; overflow: scroll;">
                                     <ul style="list-style: none;">
                                         <?php
                                         foreach ($series as $id => $serie_title) {
@@ -662,12 +662,19 @@ include '../header.php';
                 ...store,
                 series: storeSeries,
             };
+            Highcharts.setOptions({
+             colors: ['#2f7ed8', '#0d233a', '#365e0c', '#910000', '#1aadce',
+                        '#492970', '#f28f43', '#77a1e5', '#778899', '#a6c96a',
+                        '#8f10ba','#876d5d']
+                });
 
             // create the chart
             var chart = $('#container').highcharts('StockChart', {
 
                 chart: {
                     type: 'line',
+                    colors: ['#d82ea5', '#0d233a', '#8bbc21', '#910000', '#1aadce',
+                        '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'],
                     zoomType: 'x',
                     events: {
                         load: function (e) {
@@ -705,6 +712,7 @@ include '../header.php';
 
                 plotOptions: {
                     series: {
+                        lineWidth: 3,
                         events: {
                             legendItemClick: legendItemClickHandler,
                         },
@@ -744,7 +752,7 @@ include '../header.php';
                         }
                     ],
                     inputEnabled: false,
-                    selected: 3 // 5y
+                    selected: 2 // 1y
                 },
 
                 exporting: {
@@ -758,11 +766,15 @@ include '../header.php';
                     type: 'datetime',
                     minRange: 24 * 3600 * 1000, // one day
                     labels : {
-                        style: { "fontSize" : "15px" }//, "font-weight" : "bold" }
+                        style: { "fontSize" : "25px" }//, "font-weight" : "bold" }
                     }
                 },
 
                 legend: {
+                    itemStyle: {
+                        fontWeight: 'bold',
+                        fontSize: "25px"
+                    },
                     enabled: true,
                     floating: true,
                     layout: 'horizontal',
@@ -773,7 +785,7 @@ include '../header.php';
                 yAxis: {
                     opposite: true,
                     labels : {
-                        style : { "fontSize" : "15px" , "font-weight" : "bold" }
+                        style : { "fontSize" : "25px" , "font-weight" : "bold" }
                     }
                 },
                 credits: {
