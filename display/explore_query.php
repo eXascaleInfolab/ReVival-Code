@@ -126,7 +126,7 @@ foreach ($series as &$serie) {
 
     $query = "
             SELECT
-                CONVERT(sys.timestamp_to_str($table.datetime, '%s'), int) * 1000 as datetime,
+                sys.epoch(datetime) * 1000 as datetime,
                 $table.value as value         
             FROM
                 $table

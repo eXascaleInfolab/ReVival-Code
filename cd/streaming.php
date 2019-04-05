@@ -48,7 +48,7 @@ foreach ($reference_series_ids as $reference_series_id) {
 
     $query = "
             SELECT
-                CONVERT(sys.timestamp_to_str($table.datetime, '%s'), int) as datetime,
+                sys.epoch(datetime) as datetime,
                 $table.value as value,
                 series.title
             FROM

@@ -31,7 +31,7 @@ LANGUAGE CPP
     #include <dlfcn.h>
     #include <cmath>
     #include <map>
-    #define CENTROID_LIBRARY_PATH "libIncCD.so"
+    #define CENTROID_LIBRARY_PATH "/home/zakhar/MVR/CentroidCentral/CD_tool/cmake-build-debug/libIncCD.so"
     
     //-- verify basic integrity of the data
     if (dt_in.count != sid_in.count || dt_in.count != tsval.count)
@@ -304,7 +304,7 @@ LANGUAGE CPP
     #include <cmath>
     #include <map>
     #include <chrono>
-    #define CENTROID_LIBRARY_PATH "libIncCD.so"
+    #define CENTROID_LIBRARY_PATH "/home/zakhar/MVR/CentroidCentral/CD_tool/cmake-build-debug/libIncCD.so"
 
     //-- verify basic integrity of the data
     if (dt_in.count != sid_in.count || dt_in.count != tsval.count)
