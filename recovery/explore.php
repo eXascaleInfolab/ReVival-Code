@@ -221,7 +221,7 @@ include '../header.php';
                         <div class="text-center">
                             <label for="udfCheck">
                                 <input id="udfCheck" type="checkbox" name="udf">
-                                <span> use UDF</span>
+                                <span> use PHP</span>
                             </label>
                         </div>
                     </div>
