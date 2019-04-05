@@ -245,12 +245,59 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
 
     if ($normtype == 0 && !is_null($conn))
     {
+        $mean = array();
         $stddev = array();
+        $min = array();
+        $max = array();
 
         for ($j = 0; $j < $n; $j++)
         {
             $stat = get_statistics($conn, $table, $explore_object->{"series"}[$j]["id"]);
+            $mean[] = $stat->{"mean"};
             $stddev[] = $stat->{"stddev"};
+            $min[] = $stat->{"min"};
+            $max[] = $stat->{"max"};
+        }
+    }
+
+    if ($normtype == 1 && !is_null($conn))
+    {
+        for ($j = 0; $j < $n; $j++)
+        {
+            for ($i = 0; $i < $m; $i++)
+            {
+                if (is_null($explore_object->{"series"}[$j]["points"][$i][1]))
+                {
+                    $recval = $explore_object->{"series"}[$j]["recovered"][$i][1];
+
+                    if (!isset($recval) || is_null($recval))
+                    {
+                        continue;
+                    }
+
+                    $explore_object->{"series"}[$j]["recovered"][$i][1] = ($recval - $mean[$j]) / $stddev[$j];
+                }
+            }
+        }
+    }
+    else if ($normtype == 2 && !is_null($conn))
+    {
+        for ($j = 0; $j < $n; $j++)
+        {
+            for ($i = 0; $i < $m; $i++)
+            {
+                if (is_null($explore_object->{"series"}[$j]["points"][$i][1]))
+                {
+                    $recval = $explore_object->{"series"}[$j]["recovered"][$i][1];
+
+                    if (!isset($recval) || is_null($recval))
+                    {
+                        continue;
+                    }
+
+                    $explore_object->{"series"}[$j]["recovered"][$i][1] = ($recval - $min[$j]) / ($max[$j] - $min[$j]);
+                }
+            }
         }
     }
 
