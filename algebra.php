@@ -179,7 +179,7 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         {
             foreach ($visible as $vseries)
             {
-                if ($vseries->{"id"} == $rseries["id"])
+                if ($vseries->{"id"} == $rseries["id"] && $vseries->{"visible"})
                 {
                     $status = "reference";
                     $series_filter .= "series_id = $this_id OR ";
