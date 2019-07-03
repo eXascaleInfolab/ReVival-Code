@@ -3,7 +3,7 @@ require 'monetdb/php_monetdb.php';
 require 'monetdb/php_monetdb_ext.php';
 $conn = monetdb_connect(
     $lang = "sql",
-    $host = "192.168.64.1", $port = "50000",
+    $host = "127.0.0.1", $port = "50000",
     $username = "oliver", $password = "R0J-K9wj",
     $database = "revival");
 if (!$conn) {
