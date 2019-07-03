@@ -179,9 +179,9 @@ include '../header.php';
                         <label>Amount of reference time-series:</label>
                         <select id="amount" class="form-control" name="amount">
                             <option value="2">2</option>
-                            <option value="3" selected>3</option>
+                            <option value="3">3</option>
                             <option value="4">4</option>
-                            <option value="5">5</option>
+                            <option value="5" selected>5</option>
                         </select>
                     </div>
                 </div>
@@ -199,9 +199,9 @@ include '../header.php';
                     <label>Time range:</label>
                     <select class="form-control" id="range" name="range">
                         <option value="7">week</option>
-                        <option value="30" selected>month</option>
+                        <option value="30">month</option>
                         <option value="365">year</option>
-                        <option value="0">as selected in chart</option>
+                        <option value="0" selected>as selected in chart</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -213,11 +213,6 @@ include '../header.php';
                         <option>0.0001</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Additional missing values:</label>
-                    <input name="missingperc" class="form-control" title="missing" value="10%" maxlength="3">
-                </div>
-
                 <button type="submit" class="btn btn-default pull-right">Recover</button>
             </form>
         </div>
@@ -404,6 +399,11 @@ include '../header.php';
                         },
                         {
                             type: 'year',
+                            count: 2,
+                            text: '2y'
+                        },
+                        {
+                            type: 'year',
                             count: 5,
                             text: '5y'
                         },
@@ -413,7 +413,7 @@ include '../header.php';
                         }
                     ],
                     inputEnabled: false,
-                    selected: 3 // 5y
+                    selected: 3 // 2y
                 },
 
                 exporting: {

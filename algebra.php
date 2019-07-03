@@ -32,11 +32,11 @@ function RMV($x, $base_series_index, $threshold, $k, $normalize = false, $mean =
 
     if ($k == 0)
     {
-        if ($m == 2 || $m == 3)
+        if ($m <= 2)
         {
             $k = 1;
         }
-        else if ($m == 4 || $m == 5)
+        else if ($m <= 3)
         {
             $k = 2;
         }
@@ -590,11 +590,11 @@ function RMV_all($x, $threshold, $k, $normalize = false, $mean = NULL, $stddev =
 
     if ($k == 0)
     {
-        if ($kinda_m == 2 || $kinda_m == 3)
+        if ($kinda_m <= 2)
         {
             $k = 1;
         }
-        else if ($kinda_m == 4 || $kinda_m == 5)
+        else if ($kinda_m <= 3)
         {
             $k = 2;
         }

@@ -59,7 +59,18 @@ $threshold = @$_GET['threshold'];
 // Instantiate the object that eventually be returned in JSON format
 $retrieve_object = new stdClass();
 
-$table = 'hourly'; //final
+$range = $end - $start;
+// find the right table
+// up to 8 month range loads hourly data
+if ($range < 8 * 31 * 24 * 3600 * 1000) {
+    $table = 'hourly';
+    // up to 6 years range loads daily data
+} elseif ($range < 6 * 12 * 31 * 24 * 3600 * 1000) {
+    $table = 'daily';
+    // greater range loads weekls data
+} else {
+    $table = 'weekly';
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
