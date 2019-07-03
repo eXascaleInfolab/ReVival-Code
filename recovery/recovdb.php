@@ -315,63 +315,33 @@ include '../header.php';
     </div>
     <p>To recover a dataset, click on its title from the table below.</p>
 
-    <h3>Modified</h3>
-    <p>These data sets have been modified by removing some values in select time series. </p>
+    <h3>RecovDB complete data sets</h3>
+    <p>These data sets have no missing values. </p>
     <table class="table">
         <tr>
             <th>Title</th>
             <th>Source</th>
             <th style="text-align: right">Time series</th>
             <th style="text-align: right">Existing values</th>
-            <th style="text-align: right">Missing values</th>
         </tr>
 
-        <?php foreach ($modified_datasets as $dataset_object) { ?>
+        <?php foreach ($complete_datasets as $dataset_object) { ?>
 
             <tr>
                 <td>
-                    <a href="explore_incomplete.php?dataset=<?php echo $dataset_object->id; ?>"><?php echo $dataset_object->title; ?></a>
+                    <a href="explore.php?dataset=<?php echo $dataset_object->id; ?>"><?php echo $dataset_object->title; ?></a>
                 </td>
                 <td><?php echo $dataset_object->source_title; ?> <a
                             href="<?php echo $dataset_object->source_url; ?>"><span class="glyphicon glyphicon-link"
                                                                                     aria-hidden="true"></span></a></td>
                 <td style="text-align: right"><?php echo number_format($dataset_object->amount, 0, '.', "'"); ?></td>
                 <td style="text-align: right"><?php echo number_format($dataset_object->values, 0, '.', "'"); ?></td>
-                <td style="text-align: right"><?php echo number_format($dataset_object->missing, 0, '.', "'"); ?></td>
             </tr>
 
         <?php } ?>
 
     </table>
-    <h3>Original</h3>
-    <p>These data sets contain only raw data and have not been modified (by removing existing values). This allows the
-        recovery with CD to be tested on entirely raw, real-world data.</p>
-    <table class="table">
-        <tr>
-            <th>Title</th>
-            <th>Source</th>
-            <th style="text-align: right">Time series</th>
-            <th style="text-align: right">Existing values</th>
-            <th style="text-align: right">Missing values</th>
-        </tr>
 
-        <?php foreach ($original_datasets as $dataset_object) { ?>
-
-            <tr>
-                <td>
-                    <a href="explore_incomplete.php?dataset=<?php echo $dataset_object->id; ?>"><?php echo $dataset_object->title; ?></a>
-                </td>
-                <td><?php echo $dataset_object->source_title; ?> <a
-                            href="<?php echo $dataset_object->source_url; ?>"><span class="glyphicon glyphicon-link"
-                                                                                    aria-hidden="true"></span></a></td>
-                <td style="text-align: right"><?php echo number_format($dataset_object->amount, 0, '.', "'"); ?></td>
-                <td style="text-align: right"><?php echo number_format($dataset_object->values, 0, '.', "'"); ?></td>
-                <td style="text-align: right"><?php echo number_format($dataset_object->missing, 0, '.', "'"); ?></td>
-            </tr>
-
-        <?php } ?>
-
-    </table>
 </div>
 <?php
 include '../footer.php';
