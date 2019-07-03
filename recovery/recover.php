@@ -99,8 +99,8 @@ include '../header.php';
     <div class="form-group" style="position:absolute; top: 77px; right:85px; z-index: 1;">
         Data:
         <div class="btn-group" role="group">
-            <button id="rawButton" type="button" class="btn btn-default btn-sm">Raw</button>
-            <button id="zButton" type="button" class="btn btn-default btn-sm active">Z-Score</button>
+            <button id="rawButton" type="button" class="btn btn-default btn-sm active">Raw</button>
+            <button id="zButton" type="button" class="btn btn-default btn-sm">Z-Score</button>
             <button id="minMaxButton" type="button" class="btn btn-default btn-sm">Min-Max</button>
         </div>
     </div>
@@ -178,7 +178,7 @@ include '../header.php';
             $('#minMaxButton').addClass('active');
         });
 
-        var norm = 1;
+        var norm = 0;
         var min, max;
 
         function setNorm(norm) {
@@ -247,7 +247,7 @@ include '../header.php';
             renderedSeries.push({
                 type: 'line',
                 name: "[B] ".concat(retrieve_object.retrieved.title).concat("<br>centroid decomp."),
-                data: retrieve_object.retrieved.points.znorm.slice(0, retrieve_object.retrieved.points.znorm.length),
+                data: retrieve_object.retrieved.points.raw.slice(0, retrieve_object.retrieved.points.raw.length),
                 marker: {
                     radius: 2,
                     symbol: 'circle'
@@ -261,7 +261,7 @@ include '../header.php';
             renderedSeries.push({
                 type: 'line',
                 name: "[B] ".concat(retrieve_object.original.title).concat("<br>existing values"),
-                data: retrieve_object.original.points.znorm.slice(0, retrieve_object.original.points.znorm.length),
+                data: retrieve_object.original.points.raw.slice(0, retrieve_object.original.points.raw.length),
                 color: 'black',
                 lineWidth: 3,
                 marker: {
@@ -276,7 +276,7 @@ include '../header.php';
                 type: 'line',
                 visible: false,
                 name: "[B] ".concat(retrieve_object.linear.title).concat("<br>linear interp."),
-                data: retrieve_object.linear.points.znorm.slice(0, retrieve_object.linear.points.znorm.length),
+                data: retrieve_object.linear.points.raw.slice(0, retrieve_object.linear.points.raw.length),
                 marker: {
                     radius: 2,
                     symbol: 'circle'
@@ -287,6 +287,7 @@ include '../header.php';
             });
 
             var counter = 0;
+            const reflen = retrieve_object.reference_series.length;
 
             retrieve_object.reference_series.forEach(function (series) {
 
@@ -294,15 +295,15 @@ include '../header.php';
                     type: 'line',
                     visible: visibility,
                     name: "[R] ".concat(series.title),
-                    data: series.points.znorm.slice(0, series.points.znorm.length),
+                    data: series.points.raw.slice(0, series.points.raw.length),
                     marker: {
                         enabled: false
                     },
                     dataGrouping: {enabled: false}
                 });
 
+                visibility = counter == (reflen - 2);
                 counter++;
-                if (counter > 1) visibility = false;
 
             });
 
@@ -311,7 +312,7 @@ include '../header.php';
                     type: 'line',
                     visible: false,
                     name: "[O] ".concat(retrieve_object.comparison.title).concat("<br>ground truth"),
-                    data: retrieve_object.comparison.points.znorm.slice(0, retrieve_object.comparison.points.znorm.length),
+                    data: retrieve_object.comparison.points.raw.slice(0, retrieve_object.comparison.points.raw.length),
                     color: 'red',
                     marker: {
                         radius: 2,

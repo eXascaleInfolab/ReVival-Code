@@ -254,7 +254,7 @@ include '../header.php';
                             formaction="/api/recover.php"
                             value="Recover" class="btn btn-default pull-right"
                         />
-                        <div class="text-center">
+                        <div class="text-center hidden">
                             <label for="udfCheck">
                                 <input id="udfCheck" type="checkbox" name="udf">
                                 <span> use PHP</span>

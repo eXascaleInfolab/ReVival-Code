@@ -190,7 +190,7 @@ include '../header.php';
                     } ?>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" id="comparison" name="comparison_serie" value=" <?php echo $id; ?>">
+                            <input type="checkbox" id="comparison" name="comparison_serie" value=" <?php echo $id; ?> checked">
                             Use ground truth (if available)
                         </label>
                     </div>
