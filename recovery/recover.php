@@ -135,8 +135,7 @@ include '../header.php';
         var retrieve_object;
 
         Highcharts.theme = {
-            colors: ['#50077f', '#AA4643', '#89A54E', '#80699B', '#3D96AE',
-   '#DB843D', '#92A8CD', '#A47D7C', '#B5CA92']
+            colors: ['#058DC7', '#50B432', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4']
         };
 
         Highcharts.setOptions(Highcharts.theme);
