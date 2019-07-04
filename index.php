@@ -38,7 +38,7 @@ include 'header.php';
             </p>
             <hr/>
 
-            <p>ReVival consists of the following components:</p>
+            <p>ReVival consists of the following features:</p>
 
             <div class="row">
                 <div class="col-md-3">
@@ -50,11 +50,11 @@ include 'header.php';
                 </div>
                 <div class="col-md-4">
                     <p><b>Recovery:</b></p>
-                    <ul>
-                        <li><a href="/cd/recovery.php">Matrix data</a></li>
-                        <li><a href="/recovery/static.php">Synthetic data</a></li>
-                        <li><a href="/recovery/datasets.php">Real-world batch data</a></li>
-                        <li><a href="/streaming/datastream.php">Real-world streaming data</a></li>
+                    <ul><li><a href="/recovery/static.php">Example</a></li>
+                        <li><a href="/recovery/recovdb.php">RecovDB</a></li>
+                        <li><a href="/recovery/datasets.php">Real-world (batch)</a></li>
+                        <li><a href="/streaming/datastream.php">Real-world (streaming)</a></li>
+                        <li><a href="/cd/recovery.php">Matrix</a></li>
                     </ul>
                 </div>
                 <div class="col-md-5">
