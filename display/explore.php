@@ -323,16 +323,17 @@ include '../header.php';
                         },
                         {
                             type: 'year',
-                            count: 5,
-                            text: '5y'
+                            count: 2,
+                            text: '2y'
                         },
                         {
-                            type: 'all',
-                            text: 'All'
+                            type: 'year',
+                            count: 5,
+                            text: '5y'
                         }
                     ],
                     inputEnabled: false,
-                    selected: 3 // 5y
+                    selected: 3 // 2y
                 },
 
                 exporting: {

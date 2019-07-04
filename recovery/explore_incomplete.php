@@ -406,10 +406,6 @@ include '../header.php';
                             type: 'year',
                             count: 5,
                             text: '5y'
-                        },
-                        {
-                            type: 'all',
-                            text: 'All'
                         }
                     ],
                     inputEnabled: false,
