@@ -272,20 +272,6 @@ include '../header.php';
                 dataGrouping: {enabled: false}
             });
 
-            renderedSeries.push({
-                type: 'line',
-                visible: false,
-                name: "[B] ".concat(retrieve_object.linear.title).concat("<br>linear interp."),
-                data: retrieve_object.linear.points.raw.slice(0, retrieve_object.linear.points.raw.length),
-                marker: {
-                    radius: 2,
-                    symbol: 'circle'
-                },
-                color: 'green',
-                zIndex: 997,
-                dataGrouping: {enabled: false}
-            });
-
             var counter = 0;
             const reflen = retrieve_object.reference_series.length;
 
