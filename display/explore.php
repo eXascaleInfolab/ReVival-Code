@@ -131,8 +131,8 @@ include '../header.php';
     <div class="form-group" style="position:absolute; top: 77px; right:30px; z-index: 1;">
         Data:
         <div class="btn-group" role="group">
-            <button id="rawButton" type="button" class="btn btn-default btn-sm">Raw</button>
-            <button id="zButton" type="button" class="btn btn-default btn-sm active">Z-Score</button>
+            <button id="rawButton" type="button" class="btn btn-default btn-sm active">Raw</button>
+            <button id="zButton" type="button" class="btn btn-default btn-sm">Z-Score</button>
             <button id="minMaxButton" type="button" class="btn btn-default btn-sm">Min-Max</button>
         </div>
     </div>
@@ -210,7 +210,7 @@ include '../header.php';
             $('#hiddenMax').val(Math.round(chart.xAxis[0].max));
         });
 
-        var norm = 1;
+        var norm = 0;
         var min, max;
 
         function setNorm(i) {
