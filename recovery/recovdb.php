@@ -214,6 +214,7 @@ $query = "
         FROM
             sets 
         WHERE sets.modified = FALSE AND sets.id > 4
+        ORDER BY sets.id DESC
     ";
 
 $result = monetdb_query($conn, $query);
