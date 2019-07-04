@@ -82,7 +82,7 @@ include 'header.php';
                                                       src="/resources/Xi_logo.svg"/></a>
                 &nbsp;&nbsp;
                 <a href="http://monetdb.org/"><img style="width: 35%;height: auto;"
-                                                   src="/resources/monetdb-final-500.png"/></a>
+                                                   src="/resources/mdbs_logo.png"/></a>
             </div>
         </div>
     </div>

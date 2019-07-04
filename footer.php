@@ -9,7 +9,7 @@
             <p><a href="https://exascale.info">eXascale Infolab</a></p>
         </div>
         <div class="col-md-6">
-            <p class="muted pull-right">August 2018</p>
+            <p class="muted pull-right">March 2019</p>
         </div>
     </div>
 </div>
