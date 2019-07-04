@@ -207,15 +207,18 @@ foreach ($complete_datasets as $dataset_object) {
     }
 }
 
-$page_title = "Data sets";
+$page_title = "Datasets";
 include '../header.php';
 ?>
 <div class="container">
     <div class="page-header">
-        <h2>Data sets</h2>
+        <h2>Datasets</h2>
     </div>
-    <h3>Original</h3>
+    
     <p>To view a dataset, click on its title from the table below.</p>
+    
+    <h3>Original</h3>
+    <p>These datasets contain raw data.</p>
     <table class="table">
         <tr>
             <th>Title</th>
@@ -244,7 +247,7 @@ include '../header.php';
     </table>
 
     <h3>Complete</h3>
-    <p>To view a dataset, click on its title from the table below.</p>
+    <p>These datasets have no missing values.</p>
     <table class="table">
         <tr>
             <th>Title</th>

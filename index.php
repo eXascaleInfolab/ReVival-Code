@@ -44,13 +44,13 @@ include 'header.php';
                 <div class="col-md-3">
                     <p><b>Display:</b></p>
                     <ul>
-                        <li><a href="/display/datasets.php">Data sets</a></li>
+                        <li><a href="/display/datasets.php">Datasets</a></li>
                         <li><a href="/display/datastream.php">Data stream</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
                     <p><b>Recovery:</b></p>
-                    <ul><li><a href="/recovery/static.php">Example</a></li>
+                    <ul><li><a href="/recovery/static.php">Toy Example</a></li>
                         <li><a href="/recovery/recovdb.php">RecovDB</a></li>
                         <li><a href="/recovery/datasets.php">Real-world (batch)</a></li>
                         <li><a href="/streaming/datastream.php">Real-world (streaming)</a></li>

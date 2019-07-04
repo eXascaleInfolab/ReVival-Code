@@ -306,17 +306,17 @@ foreach ($complete_datasets as $dataset_object) {
     }
 }
 
-$page_title = "Data sets";
+$page_title = "Datasets";
 include '../header.php';
 ?>
 <div class="container">
     <div class="page-header">
-        <h2>Data sets</h2>
+        <h2>Datasets</h2>
     </div>
     <p>To recover a dataset, click on its title from the table below.</p>
 
     <h3>Modified</h3>
-    <p>These data sets have been modified by removing some values in select time series. </p>
+    <p>These datasets have been modified by introducing additional missing blocks in a selected time series. </p>
     <table class="table">
         <tr>
             <th>Title</th>
@@ -344,8 +344,7 @@ include '../header.php';
 
     </table>
     <h3>Original</h3>
-    <p>These data sets contain only raw data and have not been modified (by removing existing values). This allows the
-        recovery with CD to be tested on entirely raw, real-world data.</p>
+    <p>These datasets contain raw data.</p>
     <table class="table">
         <tr>
             <th>Title</th>
