@@ -277,7 +277,7 @@ include '../header.php';
             });
 
             Highcharts.setOptions({
-                colors: ["#7cb5ec", "#434348", "#a6c96a", "#f7a35c", "#8f10ba", "#f15c80", "#2b908f", "#876d5d", "#910000", "#8085e9", "#365e0c", "#90ed7d"]
+                colors: ["#7cb5ec", "#434348", "#a6c96a", "#2b908f", "#8f10ba", "#f15c80", "#f7a35c", "#876d5d", "#910000", "#8085e9", "#365e0c", "#90ed7d"]
             });
 
             // create the chart
