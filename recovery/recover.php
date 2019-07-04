@@ -248,11 +248,12 @@ include '../header.php';
                 type: 'line',
                 name: "[B] ".concat(retrieve_object.retrieved.title).concat("<br>centroid decomp."),
                 data: retrieve_object.retrieved.points.raw.slice(0, retrieve_object.retrieved.points.raw.length),
+                lineWidth: 1,
                 marker: {
                     radius: 2,
                     symbol: 'circle'
                 },
-                dashStyle: 'shortdot',
+                //dashStyle: 'shortdot',
                 color: 'red',
                 zIndex: 998,
                 dataGrouping: {enabled: false}
@@ -299,7 +300,9 @@ include '../header.php';
                     visible: false,
                     name: "[O] ".concat(retrieve_object.comparison.title).concat("<br>ground truth"),
                     data: retrieve_object.comparison.points.raw.slice(0, retrieve_object.comparison.points.raw.length),
-                    color: 'red',
+                    color: 'black',
+                    dashStyle: 'Dot',
+                    lineWidth: 1,
                     marker: {
                         radius: 2,
                         symbol: 'circle'
