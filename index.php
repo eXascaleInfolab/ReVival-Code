@@ -15,7 +15,7 @@ include 'header.php';
             </p>
             <p>
                 This tool was created at the <a href="http://exascale.info/">eXascale Infolab</a>, a research group
-                in the <a href="http://www.unifr.ch/">University of Fribourg</a>, Switzerland.
+                at the <a href="http://www.unifr.ch/">University of Fribourg</a>, Switzerland.
             </p>
         </div>
     </div>
@@ -50,8 +50,8 @@ include 'header.php';
                 </div>
                 <div class="col-md-4">
                     <p><b>Recovery:</b></p>
-                    <ul><li><a href="/recovery/static.php">Toy Example</a></li>
-                        <li><a href="/recovery/recovdb.php">RecovDB</a></li>
+                    <ul><li><a href="/recovery/static.php">Toy example</a></li>
+                        <li><a href="/recovery/recovdb.php">Database recovery (RecovDB)</a></li>
                         <li><a href="/recovery/datasets.php">Real-world (batch)</a></li>
                         <li><a href="/streaming/datastream.php">Real-world (streaming)</a></li>
                         <li><a href="/cd/recovery.php">Matrix</a></li>

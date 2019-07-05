@@ -5,7 +5,7 @@ include '../header.php';
 $interval = @$_GET['interval'];
 
 if (!isset($interval)) {
-    $interval = 40;
+    $interval = 20;
 }
 ?>
     <div class="container"
@@ -223,6 +223,10 @@ if (!isset($interval)) {
                     text: null
                 },
                 series: [{
+                    name: 'Base-series',
+                    data: iterations[0].x[0].slice(),
+                    color: 'red'
+                }, {
                     name: 'Ref-series 1',
                     data: iterations[0].x[1].slice()
                 }, {
@@ -231,10 +235,6 @@ if (!isset($interval)) {
                 }, {
                     name: 'Ref-series 3',
                     data: iterations[0].x[3].slice()
-                }, {
-                    name: 'Base-series',
-                    data: iterations[0].x[0].slice(),
-                    color: 'red'
                 }, {
                     name: 'Recovered points',
                     data: null,

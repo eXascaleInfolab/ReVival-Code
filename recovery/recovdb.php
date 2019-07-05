@@ -317,7 +317,7 @@ include '../header.php';
     <p>To recover a dataset, click on its title from the table below.</p>
 
     <h3>RecovDB complete datasets</h3>
-    <p>These datasets have no missing values.</p>
+    <p>These datasets have no missing values. Users can introduce missing blocks in multiple time series.</p>
     <table class="table">
         <tr>
             <th>Title</th>

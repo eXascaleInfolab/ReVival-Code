@@ -212,7 +212,7 @@ null,-24,12,24
 12,-8,4,8</textarea>
                     </div>
                     <div class="col-md-12" style="padding-top: 30px;">
-                        <input class="btn" type="submit" value="Recover!"/> <input class="btn" form="udfquery" type="submit" value="Recover (using UDF)"/>
+                        <input class="btn" type="submit" value="Recover"/>
                     </div>
                 </form>
 

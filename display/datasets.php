@@ -218,7 +218,7 @@ include '../header.php';
     <p>To view a dataset, click on its title from the table below.</p>
     
     <h3>Original</h3>
-    <p>These datasets contain raw data.</p>
+    <p>These datasets contain raw data with missing values.</p>
     <table class="table">
         <tr>
             <th>Title</th>

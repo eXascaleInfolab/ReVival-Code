@@ -344,7 +344,7 @@ include '../header.php';
 
     </table>
     <h3>Original</h3>
-    <p>These datasets contain raw data.</p>
+    <p>These datasets contain raw data with missing values.</p>
     <table class="table">
         <tr>
             <th>Title</th>
