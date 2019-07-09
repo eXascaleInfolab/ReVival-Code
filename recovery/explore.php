@@ -573,7 +573,7 @@ include '../header.php';
                         id: serieId,
                         name: `${serie.title}-recovered`,
                         color,
-                        dashStyle: 'ShortDot',
+                        lineWidth: 1,
                         data, 
                     }, false);
                 }
