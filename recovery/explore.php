@@ -167,15 +167,28 @@ include '../header.php';
                             <div id="collapseOne" class="collapse in" aria-labelledby="headingOne" data-parent="#seriesAccordion">
                                 <div class="card-body" style="max-height: 150px; overflow: scroll;">
                                     <ul style="list-style: none;">
-                                        <?php 
+                                        <?php $basetscnt = 0;
                                             foreach ($series as $id => $serie_title) {
-                                                echo "<li>
-                                                    <label for=\"$id\">
-                                                        <input id=\"$id\" type=\"checkbox\" name=\"series\" value=\"$id\"/>
-                                                        <span> $serie_title</span>
-                                                    </label>
-                                                </li>";
-                                            } 
+                                                if ($basetscnt == 0)
+                                                {
+                                                    echo "<li>
+                                                        <label for=\"$id\">
+                                                            <input id=\"$id\" type=\"checkbox\" name=\"series\" value=\"$id\"/ checked>
+                                                            <span> $serie_title</span>
+                                                        </label>
+                                                    </li>";
+                                                    $basetscnt++;
+                                                }
+                                                else
+                                                {
+                                                    echo "<li>
+                                                        <label for=\"$id\">
+                                                            <input id=\"$id\" type=\"checkbox\" name=\"series\" value=\"$id\"/>
+                                                            <span> $serie_title</span>
+                                                        </label>
+                                                    </li>";
+                                                }
+                                            }
                                         ?>
                                     </ul>
                                 </div>
