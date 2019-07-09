@@ -196,11 +196,11 @@ include '../header.php';
                                             aria-expanded="false"
                                             aria-controls="collapseTwo"
                                     >
-                                        <span>Use the following time series for reference: <i class="fa fa-chevron-down"></i></span>
+                                        <span>Use custom time series for reference: <i class="fa fa-chevron-down"></i></span>
                                     </button>
                                 </h2>
                             </div>
-                            <div id="collapseTwo" class="collapse in" aria-labelledby="headingTwo" data-parent="#seriesAccordion2">
+                            <div id="collapseTwo" class="collapse" aria-expanded="false" aria-labelledby="headingTwo" data-parent="#seriesAccordion2">
                                 <div class="card-body" style="max-height: 150px; overflow: scroll;">
                                     <ul style="list-style: none;">
                                         <?php
