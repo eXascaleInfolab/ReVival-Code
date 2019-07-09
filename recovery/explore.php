@@ -548,7 +548,7 @@ include '../header.php';
                         name: `${serie.title}-ground`,
                         color,
                         visible: false,
-                        dashStyle: 'ShortDot',
+                        dashStyle: 'Dot',
                         data, 
                     }, false);
                 }
