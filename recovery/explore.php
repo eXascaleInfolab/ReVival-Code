@@ -687,6 +687,7 @@ include '../header.php';
                                     min,
                                     max,
                                 };
+                                setNorm(0);
                             } catch(err) {
                                 console.error(err);
                             }
