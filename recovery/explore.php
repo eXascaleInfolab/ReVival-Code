@@ -169,7 +169,7 @@ include '../header.php';
                                     <ul style="list-style: none;">
                                         <?php $basetscnt = 0;
                                             foreach ($series as $id => $serie_title) {
-                                                if ($basetscnt == 0)
+                                                if ($basetscnt == 0 || $basetscnt == 3)
                                                 {
                                                     echo "<li>
                                                         <label for=\"$id\">
@@ -177,7 +177,6 @@ include '../header.php';
                                                             <span> $serie_title</span>
                                                         </label>
                                                     </li>";
-                                                    $basetscnt++;
                                                 }
                                                 else
                                                 {
@@ -188,6 +187,7 @@ include '../header.php';
                                                         </label>
                                                     </li>";
                                                 }
+                                                $basetscnt++;
                                             }
                                         ?>
                                     </ul>
@@ -245,8 +245,8 @@ include '../header.php';
                     <label>Drop values by:</label>
                     <select class="form-control" name="drop">
                         <option value="0">0%</option>
-                        <option value="0.10">10%</option>
-                        <option value="0.20">20%</option>
+                        <option value="0.10" <?php if ($dataset == "5") echo "selected"; ?>>10%</option>
+                        <option value="0.20" <?php if ($dataset != "5") echo "selected"; ?>>20%</option>
                         <option value="0.40">40%</option>
                         <option value="0.60">60%</option>
                         <option value="0.80">80%</option>
@@ -743,8 +743,8 @@ include '../header.php';
                         },
                         {
                             type: 'month',
-                            count: 1,
-                            text: '1m'
+                            count: 3,
+                            text: '3m'
                         },
                         {
                             type: 'year',
@@ -763,7 +763,7 @@ include '../header.php';
                         }
                     ],
                     inputEnabled: false,
-                    selected: 3 // 2y
+                    selected: <?php if ($dataset == "5") echo "1"; else echo "3"; ?> // 3m or 2y (default)
                 },
 
                 exporting: {
