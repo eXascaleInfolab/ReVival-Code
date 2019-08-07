@@ -9,7 +9,7 @@ REVIVAL_CDTOOL_SNAPSHOT="e311b0b60542b0d2059d99fab23febe7bc466513"
 # prerequisites #
 #################
 # general
-sudo apt update
+sudo apt -y update
 sudo apt -y upgrade
 
 # for building monetdb
@@ -66,19 +66,21 @@ cd..
 ##############################
 
 unzip ReVival.zip
+mv ReVival-Code-master ReVival
 
-monetdb5/bin/monetdbd create revival_farm
-monetdb5/bin/monetdbd start revival_farm
-monetdb5/bin/monetdb create revival
-monetdb5/bin/monetdb release revival
-monetdb5/bin/monetdb set embedpy=yes revival
-monetdb5/bin/monetdb set embeded_c=true revival
+monetdbd create revival_farm
+monetdbd start revival_farm
+monetdb create revival
+monetdb release revival
+monetdb set embedpy=yes revival
+monetdb set embedc=yes revival
 
 mv ReVival/.service/revivaldump.zip revivaldump.zip
 unzip revivaldump.zip
 rm revivaldump.zip
-echo -e "user=monetdb\npassword=monetdb" > .monetdb
-monetdb5/bin/mclient -d revival revivaldump.sql
+echo "user=monetdb\npassword=monetdb" > .monetdb
+mclient -d revival revivaldump.sql
+rm revivaldump.sql
 rm .monetdb
 
 #todo: add to autostart
@@ -92,8 +94,8 @@ rm -rf ReVival/.service/
 
 # php5
 sudo apt install -y software-properties-common
-sudo add-apt-repository ppa:ondrej/php
-sudo apt update
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt -y update
 sudo apt install -y php7.1 php7.1-mysql php-gettext php7.1-mbstring php-xdebug libapache2-mod-php7.1
 
 # apache, should not be necessary
@@ -102,3 +104,14 @@ sudo apt install -y apache2
 # move website to apache
 sudo rm /var/www/html/index.html
 sudo mv ReVival/* /var/www/html/
+
+############
+# clean up #
+############
+
+rm CD_tool.zip
+rm MonetDB.tar.xz
+rm ReVival.zip
+rm -rf ReVival
+rm -rf "CD_tool-$REVIVAL_CDTOOL_SNAPSHOT"
+rm -rf "MonetDB-$REVIVAL_MONETDB_VERSION"
