@@ -22,6 +22,8 @@ wget "https://github.com/eXascaleInfolab/ReVival-Code/archive/master.zip" -O ReV
 
 # extract website, move to www
 unzip ReVival.zip
+rm ReVival.zip
+mv ReVival-Code-master ReVival
 rm -rf ReVival/.service/
 
 # php5
