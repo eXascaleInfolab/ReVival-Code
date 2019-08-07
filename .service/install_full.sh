@@ -65,6 +65,7 @@ cd ..
 # configure & start database #
 ##############################
 
+sudo ldconfig
 unzip ReVival.zip
 mv ReVival-Code-master ReVival
 
