@@ -13,13 +13,13 @@ sudo apt update
 sudo apt -y upgrade
 
 # for building monetdb
-sudo apt install -f pkg-config bison libssl-dev libbz2-dev
+sudo apt install -y pkg-config bison libssl-dev libbz2-dev
 
 # for py+c UDFs
-sudo apt install -f build-essential
-sudo apt install -f clang
-sudo apt install -f python-dev
-sudo apt install -f python-numpy
+sudo apt install -y build-essential
+sudo apt install -y clang
+sudo apt install -y python-dev
+sudo apt install -y python-numpy
 
 #########
 # files #
@@ -89,5 +89,4 @@ rm .monetdb
 
 rm -rf ReVival/.service/
 
-# ready
- to be moved where necessary
+# ready to be moved where necessary
