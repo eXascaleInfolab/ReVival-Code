@@ -25,13 +25,13 @@ unzip ReVival.zip
 rm -rf ReVival/.service/
 
 # php5
-sudo apt install -f software-properties-common
+sudo apt install -y software-properties-common
 sudo add-apt-repository ppa:ondrej/php
 sudo apt update
-sudo apt install -f php7.1 php7.1-mysql php-gettext php7.1-mbstring php-xdebug libapache2-mod-php7.1
+sudo apt install -y php7.1 php7.1-mysql php-gettext php7.1-mbstring php-xdebug libapache2-mod-php7.1
 
 # apache, should not be necessary
-sudo apt install -f apache2
+sudo apt install -y apache2
 
 # move website to apache
 sudo rm /var/www/html/index.html
