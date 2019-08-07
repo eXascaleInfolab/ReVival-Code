@@ -9,7 +9,7 @@ REVIVAL_CDTOOL_SNAPSHOT="e311b0b60542b0d2059d99fab23febe7bc466513"
 # prerequisites #
 #################
 # general
-sudo apt update
+sudo apt -y update
 sudo apt -y upgrade
 
 # for building monetdb
@@ -59,26 +59,29 @@ cd "CD_tool-$REVIVAL_CDTOOL_SNAPSHOT"
 make library-monetdb
 sudo cp cmake-build-debug/libIncCDMdb.so /usr/local/lib/libIncCDMdb.so
 
-cd..
+cd ..
 
 ##############################
 # configure & start database #
 ##############################
 
+sudo ldconfig
 unzip ReVival.zip
+mv ReVival-Code-master ReVival
 
-monetdb5/bin/monetdbd create revival_farm
-monetdb5/bin/monetdbd start revival_farm
-monetdb5/bin/monetdb create revival
-monetdb5/bin/monetdb release revival
-monetdb5/bin/monetdb set embedpy=yes revival
-monetdb5/bin/monetdb set embeded_c=true revival
+monetdbd create revival_farm
+monetdbd start revival_farm
+monetdb create revival
+monetdb release revival
+monetdb set embedpy=yes revival
+monetdb set embedc=yes revival
 
 mv ReVival/.service/revivaldump.zip revivaldump.zip
 unzip revivaldump.zip
 rm revivaldump.zip
-echo -e "user=monetdb\npassword=monetdb" > .monetdb
-monetdb5/bin/mclient -d revival revivaldump.sql
+echo "user=monetdb\npassword=monetdb" > .monetdb
+mclient -d revival revivaldump.sql
+rm revivaldump.sql
 rm .monetdb
 
 #todo: add to autostart
@@ -90,3 +93,13 @@ rm .monetdb
 rm -rf ReVival/.service/
 
 # ready to be moved where necessary
+
+############
+# clean up #
+############
+
+rm CD_tool.zip
+rm MonetDB.tar.xz
+rm ReVival.zip
+rm -rf "CD_tool-$REVIVAL_CDTOOL_SNAPSHOT"
+rm -rf "MonetDB-$REVIVAL_MONETDB_VERSION"
