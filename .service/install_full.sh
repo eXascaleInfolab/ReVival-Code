@@ -59,7 +59,7 @@ cd "CD_tool-$REVIVAL_CDTOOL_SNAPSHOT"
 make library-monetdb
 sudo cp cmake-build-debug/libIncCDMdb.so /usr/local/lib/libIncCDMdb.so
 
-cd..
+cd ..
 
 ##############################
 # configure & start database #
