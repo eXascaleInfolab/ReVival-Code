@@ -302,9 +302,9 @@ include '../header.php';
                     data: retrieve_object.comparison.points.raw.slice(0, retrieve_object.comparison.points.raw.length),
                     color: 'black',
                     dashStyle: 'Dot',
-                    lineWidth: 1,
+                    lineWidth: 2,
                     marker: {
-                        radius: 2,
+                        radius: 0,
                         symbol: 'circle'
                     },
                     zIndex: 996,
