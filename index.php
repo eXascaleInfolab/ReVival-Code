@@ -6,12 +6,12 @@ include 'header.php';
         <div class="col-md-12">
             <div class="page-header">
                 <h1>ReVival
-                    <small>Recovery of missing values using Centroid Decomposition</small>
+                    <small>Recovery of missing values in time series</small>
                 </h1>
             </div>
             <p>
-                ReVival is an online tool to recover missing blocks in batches and streams of time series using the
-                Centroid Decomposition (CD) and to visualize the properties of the CD algorithm.
+                ReVival is an online tool to recover missing blocks in time series using the
+                Centroid Decomposition (CD) technique and to visualize the properties of the algorithm.
             </p>
             <p>
                 This tool was created at the <a href="http://exascale.info/">eXascale Infolab</a>, a research group
@@ -25,12 +25,10 @@ include 'header.php';
             <h3>Centroid Decomposition</h3>
 
             <p>The <a href="https://ieeexplore.ieee.org/document/6816643/">Centroid Decomposition</a> (CD) is a matrix
-                decomposition technique that factorizes an input matrix <b>X</b> (consisting of multiple time-series
+                decomposition technique that decomposes an input matrix <b>X</b> (consisting of multiple time-series
                 as columns) into the product of two matrices <b>L</b> (loading matrix) and <b>R</b>
                 (relevance matrix), such that <b>X</b> = <b>L</b> * <b>R<sup>T</sup></b>. CD allows to efficiently
-                perform recovery of missing values in large time series, both in batch mode and streaming mode. The
-                batch recovery uses SSV algorithm introduced <a href="https://ieeexplore.ieee.org/document/6816643/">here</a>.
-                The streaming recovery uses an efficient incremental version of the CD algorithm.
+                perform recovery of missing values in large time series, both in batch mode and streaming mode.
             </p>
             <p>
                 In addition to the recovery, ReVival can be used as an online calculator to compute the Centroid
