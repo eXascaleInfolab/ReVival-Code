@@ -185,12 +185,12 @@ include '../header.php';
             var i;
             var chart = $('#container').highcharts();
             if (norm === 0) {
-                i = 3;
+                i = 2;
                 retrieve_object.reference_series.forEach(function (series) {
                     chart.series[i].setData(series.points.raw);
                     i += 1;
                 });
-                chart.series[2].setData(retrieve_object.linear.points.raw);
+                //chart.series[2].setData(retrieve_object.linear.points.raw);
                 chart.series[1].setData(retrieve_object.original.points.raw);
                 chart.series[0].setData(retrieve_object.retrieved.points.raw);
                 if (retrieve_object.comparison != null) {
@@ -198,12 +198,12 @@ include '../header.php';
                 }
             }
             else if (norm === 2) {
-                i = 3;
+                i = 2;
                 retrieve_object.reference_series.forEach(function (series) {
                     chart.series[i].setData(series.points.znorm);
                     i += 1;
                 });
-                chart.series[2].setData(retrieve_object.linear.points.znorm);
+                //chart.series[2].setData(retrieve_object.linear.points.znorm);
                 chart.series[1].setData(retrieve_object.original.points.znorm);
                 chart.series[0].setData(retrieve_object.retrieved.points.znorm);
                 if (retrieve_object.comparison != null) {
@@ -211,12 +211,12 @@ include '../header.php';
                 }
             }
             else if (norm === 1) {
-                i = 3;
+                i = 2;
                 retrieve_object.reference_series.forEach(function (series) {
                     chart.series[i].setData(series.points.minmax);
                     i += 1;
                 });
-                chart.series[2].setData(retrieve_object.linear.points.minmax);
+                //chart.series[2].setData(retrieve_object.linear.points.minmax);
                 chart.series[1].setData(retrieve_object.original.points.minmax);
                 chart.series[0].setData(retrieve_object.retrieved.points.minmax);
                 if (retrieve_object.comparison != null) {
