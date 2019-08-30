@@ -81,13 +81,13 @@ sudo monetdb set embedc=yes revival
 mv ReVival/.service/revivaldump.zip revivaldump.zip
 unzip revivaldump.zip
 rm revivaldump.zip
-echo -e "user=monetdb\npassword=monetdb" > .monetdb
+/bin/echo -e "user=monetdb\npassword=monetdb" > .monetdb
 mclient -d revival revivaldump.sql
 rm revivaldump.sql
 rm .monetdb
 
 # add to autostart
-echo -e "Description=Starts_ReVival_database_on_MonetDB\n\nWants=network.target\nAfter=syslog.target network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/monetdbd start /var/monetdb5/revival_farm\nRestart=on-failure\nRestartSec=10\nKillMode=process\n\n[Install]\nWantedBy=multi-user.target" | sudo tee /etc/systemd/system/monetdb-revival.service
+/bin/echo -e "Description=Starts_ReVival_database_on_MonetDB\n\nWants=network.target\nAfter=syslog.target network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/monetdbd start /var/monetdb5/revival_farm\nRestart=on-failure\nRestartSec=10\nKillMode=process\n\n[Install]\nWantedBy=multi-user.target" | sudo tee /etc/systemd/system/monetdb-revival.service
 sudo systemctl enable monetdb-revival
 sudo systemctl start monetdb-revival
 
