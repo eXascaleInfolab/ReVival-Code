@@ -170,15 +170,14 @@ else {
                 </div>
             </div>
             <div class="col-md-12">
-                <h3 style="padding-left: 15px">Matrix</h3>
-                <h4 style="padding-left: 15px">
+                <h3 style="padding-left: 15px">Matrix
                     <button id="descr-show" type="button" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> show description
                     </button>
                     <button style="display: none;" id="descr-hide" type="button" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> hide description
                     </button>
-                </h4>
+                </h3>
                 <div style="display:none;padding-left: 15px" id="descr-options">
                     <p>Matrix is</p>
                     <ul>

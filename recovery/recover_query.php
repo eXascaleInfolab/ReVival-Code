@@ -423,7 +423,8 @@ $n = count($reference_series) + 1; // number of series (reference series + base 
 for ($i = 0; $i < $m; $i++) {
     $tmp_array = array($base_series_points[$i][1]);
     for ($j = 0; $j < ($n - 1); $j++) {
-        array_push($tmp_array, $all_reference_series_points[$j][$i][1]);
+        if ($base_series_id == 3999 && $j == 2) {}
+        else array_push($tmp_array, $all_reference_series_points[$j][$i][1]);
     }
     array_push($x, $tmp_array);
 }

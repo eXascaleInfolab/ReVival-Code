@@ -169,7 +169,7 @@ include '../header.php';
                                     <ul style="list-style: none;">
                                         <?php $basetscnt = 0;
                                             foreach ($series as $id => $serie_title) {
-                                                if ($basetscnt == 0 || $basetscnt == 3)
+                                                if (($basetscnt == 0 && $dataset != 8&& $dataset != 7) || ($basetscnt == 2 && $dataset == 7) || $basetscnt == 3)
                                                 {
                                                     echo "<li>
                                                         <label for=\"$id\">
@@ -232,6 +232,8 @@ include '../header.php';
                         </div>
                     </div>
                 </div>
+                <input type="hidden" name="threshold" value="0.01"/>
+                <!--
                 <div class="form-group">
                     <label>Threshold epsilon for CD:</label>
                     <select class="form-control" id="threshold" name="threshold">
@@ -241,6 +243,7 @@ include '../header.php';
                         <option>0.0001</option>
                     </select>
                 </div>
+                -->
                 <div class="form-group">
                     <label>Drop values by:</label>
                     <select class="form-control" name="drop">
@@ -547,7 +550,7 @@ include '../header.php';
                         id: serieId,
                         name: `${serie.title}-ground`,
                         color,
-                        visible: false,
+                        visible: true,
                         dashStyle: 'Dot',
                         data, 
                     }, false);
@@ -588,6 +591,7 @@ include '../header.php';
                 console.log('Explore Query Response: ', explore_object);
                 explore_object.series.forEach(function (series, i) {
                     chart.series[i].setData(series.points, false);
+                    if (<?php echo "$dataset"?> == 8 && (i != 0 && i != 3 && i != 8)) chart.series[i].setVisible(false);
                 });
                 chart.hideLoading();
                 hideRecover();

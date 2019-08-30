@@ -44,15 +44,15 @@ include 'header.php';
                     <ul>
                         <li><a href="/display/datasets.php">Datasets</a></li>
                         <li><a href="/display/datastream.php">Data stream</a></li>
+                        <li><a href="/streaming/datastream.php">Recovery stream</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
                     <p><b>Recovery:</b></p>
                     <ul><li><a href="/recovery/static.php">Toy example</a></li>
-                        <li><a href="/recovery/recovdb.php">Database recovery (RecovDB)</a></li>
+                        <li><a href="/recovery/recovdb.php">RecovDB</a></li>
                         <li><a href="/recovery/datasets.php">Real-world (batch)</a></li>
-                        <li><a href="/streaming/datastream.php">Real-world (streaming)</a></li>
-                        <li><a href="/cd/recovery.php">Matrix</a></li>
+                        <li><a href="/cd/recovery.php">Recovery calculator</a></li>
                     </ul>
                 </div>
                 <div class="col-md-5">

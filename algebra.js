@@ -211,7 +211,7 @@ function cachedTCD(x_in, z_all, l, r, truncation) {
     for (let col = 0; col < truncation; col++) {
         // fetch z to pass inside ISSV+
         let z = z_all[col];
-        incremental_scalable_sign_vector_plus(x, n, m, s, v, z);
+        local_sign_vector(x, n, m, s, v, z);
         z_all[col] = z;
 
         let sum_squared = 0;
@@ -331,6 +331,60 @@ function incremental_scalable_sign_vector_plus(x, n, m, s, v, z) {
     }
 }
 
+/**
+ * Helper function for CD to find the maximizing sign vector using LSV method
+ * @param x : array of arrays | matrix being currently decomposed
+ * @param n : int | matrix rows
+ * @param m : int | matrix cols
+ * @param s : array | service vector
+ * @param v : array | service vector
+ * @param z : array | sign vector to be used as a basis
+ * @return void
+ */
+function local_sign_vector(x, n, m, s, v, z) {
+    let z2 = trsp([z]);
+    let direction_col = matmult_AT_B(x, z2);
+    let direction = trsp(direction_col)[0];
+    //
+    // 2+ pass - update to Z
+    //
+
+    let flipped = false;
+    let lastNorm = 1E-10; // eps to avoid "parity flip"
+    for (let j = 0; j < m; ++j)
+    {
+        lastNorm += direction[j] * direction[j];
+    }
+
+    do
+    {
+        flipped = false;
+
+        for (let i = 0; i < n; ++i)
+        {
+            let signDouble = z[i] * 2;
+            let gradFlip = 0.0;
+
+            for (let j = 0; j < m; ++j)
+            {
+                let localMod = direction[j] - signDouble * x[i][j];
+                gradFlip += localMod * localMod;
+            }
+
+            if (gradFlip > lastNorm) // net positive from flipping
+            {
+                flipped = true;
+                z[i] *= -1;
+                lastNorm = gradFlip + 1E-10;
+
+                for (let j = 0; j < m; ++j)
+                {
+                    direction[j] -= signDouble * x[i][j];
+                }
+            }
+        }
+    } while (flipped);
+}
 
 /**
  * Function analog to linear_interpolated_points, except for matrix and only applied in one column (the base series),

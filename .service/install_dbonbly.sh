@@ -64,27 +64,32 @@ cd ..
 ##############################
 # configure & start database #
 ##############################
-
+# extract
 sudo ldconfig
 unzip ReVival.zip
 mv ReVival-Code-master ReVival
 
-monetdbd create revival_farm
-monetdbd start revival_farm
-monetdb create revival
-monetdb release revival
-monetdb set embedpy=yes revival
-monetdb set embedc=yes revival
+# create db
+sudo monetdbd create /var/monetdb5/revival_farm
+sudo monetdbd start /var/monetdb5/revival_farm
+sudo monetdb create revival
+sudo monetdb release revival
+sudo monetdb set embedpy=yes revival
+sudo monetdb set embedc=yes revival
 
+# upload dump
 mv ReVival/.service/revivaldump.zip revivaldump.zip
 unzip revivaldump.zip
 rm revivaldump.zip
-echo "user=monetdb\npassword=monetdb" > .monetdb
+echo -e "user=monetdb\npassword=monetdb" > .monetdb
 mclient -d revival revivaldump.sql
 rm revivaldump.sql
 rm .monetdb
 
-#todo: add to autostart
+# add to autostart
+echo -e "Description=Starts_ReVival_database_on_MonetDB\n\nWants=network.target\nAfter=syslog.target network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/monetdbd start /var/monetdb5/revival_farm\nRestart=on-failure\nRestartSec=10\nKillMode=process\n\n[Install]\nWantedBy=multi-user.target" | sudo tee /etc/systemd/system/monetdb-revival.service
+sudo systemctl enable monetdb-revival
+sudo systemctl start monetdb-revival
 
 ##################
 # set up website #

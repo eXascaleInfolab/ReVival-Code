@@ -242,7 +242,7 @@ include '../header.php';
             $('#loading').hide();
             retrieve_object = data[0];
             var renderedSeries = [];
-            var visibility = true;
+            var visibility = <?php echo "$dataset" ?> != 4;
 
             renderedSeries.push({
                 type: 'line',
@@ -289,7 +289,7 @@ include '../header.php';
                     dataGrouping: {enabled: false}
                 });
 
-                visibility = counter == (reflen - 2);
+                visibility = counter == (reflen - 2) && <?php echo "$dataset" ?> != 4;
                 counter++;
 
             });
@@ -297,7 +297,7 @@ include '../header.php';
             if (retrieve_object.comparison != null) {
                 renderedSeries.push({
                     type: 'line',
-                    visible: false,
+                    visible: true,
                     name: "[O] ".concat(retrieve_object.comparison.title).concat("<br>ground truth"),
                     data: retrieve_object.comparison.points.raw.slice(0, retrieve_object.comparison.points.raw.length),
                     color: 'black',
