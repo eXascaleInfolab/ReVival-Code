@@ -9,23 +9,22 @@ REVIVAL_CDTOOL_SNAPSHOT="e311b0b60542b0d2059d99fab23febe7bc466513"
 # prerequisites #
 #################
 # general
-sudo apt -y update
-sudo apt -y upgrade
+apt-get -y update
+apt-get -y upgrade
 
 # for building monetdb
-sudo apt install -y pkg-config bison libssl-dev libbz2-dev
+apt install -y pkg-config bison libssl-dev libbz2-dev
 
 # for py+c UDFs
-sudo apt install -y build-essential
-sudo apt install -y clang
-sudo apt install -y python-dev
-sudo apt install -y python-numpy
+apt-get install -y build-essential
+apt-get install -y clang
+apt-get install -y python-dev
+apt-get install -y python-numpy
 
 #########
 # files #
 #########
 
-cd ~
 rm -rf ReVival
 mkdir ReVival
 cd ReVival
@@ -44,7 +43,7 @@ cd "MonetDB-$REVIVAL_MONETDB_VERSION"
 # build
 ./configure --enable-pyintegration --disable-odbc --prefix=/usr/local
 make
-sudo make install
+make install
 
 cd ..
 
@@ -57,7 +56,7 @@ cd "CD_tool-$REVIVAL_CDTOOL_SNAPSHOT"
 
 # build
 make library-monetdb
-sudo cp cmake-build-debug/libIncCDMdb.so /usr/local/lib/libIncCDMdb.so
+cp cmake-build-debug/libIncCDMdb.so /usr/local/lib/libIncCDMdb.so
 
 cd ..
 
@@ -65,17 +64,17 @@ cd ..
 # configure & start database #
 ##############################
 # extract
-sudo ldconfig
+ldconfig
 unzip ReVival.zip
 mv ReVival-Code-master ReVival
 
 # create db
-sudo monetdbd create /var/monetdb5/revival_farm
-sudo monetdbd start /var/monetdb5/revival_farm
-sudo monetdb create revival
-sudo monetdb release revival
-sudo monetdb set embedpy=yes revival
-sudo monetdb set embedc=yes revival
+monetdbd create /var/monetdb5/revival_farm
+monetdbd start /var/monetdb5/revival_farm
+monetdb create revival
+monetdb release revival
+monetdb set embedpy=yes revival
+monetdb set embedc=yes revival
 
 # upload dump
 mv ReVival/.service/revivaldump.zip revivaldump.zip
@@ -86,11 +85,6 @@ mclient -d revival revivaldump.sql
 rm revivaldump.sql
 rm .monetdb
 
-# add to autostart
-/bin/echo -e "Description=Starts_ReVival_database_on_MonetDB\n\nWants=network.target\nAfter=syslog.target network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/monetdbd start /var/monetdb5/revival_farm\nRestart=on-failure\nRestartSec=10\nKillMode=process\n\n[Install]\nWantedBy=multi-user.target" | sudo tee /etc/systemd/system/monetdb-revival.service
-sudo systemctl enable monetdb-revival
-sudo systemctl start monetdb-revival
-
 ##################
 # set up website #
 ##################
@@ -99,17 +93,17 @@ sudo systemctl start monetdb-revival
 rm -rf ReVival/.service/
 
 # php5
-sudo apt install -y software-properties-common
-sudo add-apt-repository -y ppa:ondrej/php
-sudo apt -y update
-sudo apt install -y php7.1 php7.1-mysql php-gettext php7.1-mbstring php-xdebug libapache2-mod-php7.1
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:ondrej/php
+apt-get -y update
+apt-get install -y php7.1 php7.1-mysql php-gettext php7.1-mbstring php-xdebug libapache2-mod-php7.1
 
 # apache, should not be necessary
-sudo apt install -y apache2
+apt install -y apache2
 
 # move website to apache
-sudo rm /var/www/html/index.html
-sudo mv ReVival/* /var/www/html/
+rm /var/www/html/index.html
+mv ReVival/* /var/www/html/
 
 ############
 # clean up #
