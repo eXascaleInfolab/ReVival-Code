@@ -99,7 +99,7 @@ apt-get -y update
 apt-get install -y php7.1 php7.1-mysql php-gettext php7.1-mbstring php-xdebug libapache2-mod-php7.1
 
 # apache, should not be necessary
-apt install -y apache2
+apt-get install -y apache2
 
 # move website to apache
 rm /var/www/html/index.html
