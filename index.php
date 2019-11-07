@@ -5,7 +5,7 @@ include 'header.php';
     <div class="row">
         <div class="col-md-12">
             <div class="page-header">
-                <h1>ReVival
+                <h1><strong>ReVival</strong>
                     <small>Recovery of missing values in time series</small>
                 </h1>
             </div>
@@ -22,7 +22,8 @@ include 'header.php';
 
     <div class="row">
         <div class="col-md-8">
-            <h3>Centroid Decomposition</h3>
+            <hr/>
+            <h3><strong>Centroid Decomposition</strong></h3>
 
             <p>The <a href="https://ieeexplore.ieee.org/document/6816643/">Centroid Decomposition</a> (CD) is a matrix
                 decomposition technique that decomposes an input matrix <b>X</b> (consisting of multiple time-series
@@ -36,21 +37,22 @@ include 'header.php';
             </p>
             <hr/>
 
-            <p>ReVival consists of the following features:</p>
+            <h3><strong>Features</strong></h3><br>
 
             <div class="row">
                 <div class="col-md-3">
                     <p><b>Display:</b></p>
                     <ul>
                         <li><a href="/display/datasets.php">Datasets</a></li>
-                        <li><a href="/streaming/datastream.php">Online recovery</a></li>
+                        <li><a href="/display/datastream.php">Data stream</a></li>
+                        <li><a href="/streaming/datastream.php">Recovery stream</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
                     <p><b>Recovery:</b></p>
                     <ul><li><a href="/recovery/static.php">Toy example</a></li>
                         <li><a href="/recovery/recovdb.php">RecovDB</a></li>
-                        <li><a href="/recovery/datasets.php">Time Series</a></li>
+                        <li><a href="/recovery/datasets.php">Real-world (batch)</a></li>
                         <li><a href="/cd/recovery.php">Recovery calculator</a></li>
                     </ul>
                 </div>
@@ -63,8 +65,9 @@ include 'header.php';
                     </ul>
                 </div>
             </div>
+            <hr/>
 
-            <h3>Publications</h3>
+            <h3><strong>Publications</strong></h3>
 
             <ul>
                 <li>Ines Arous, Mourad Khayati, Philippe Cudré-Mauroux, Ying Zhang, Martin Kersten, and Svetlin Stalinlov. <strong>“RecovDB: Accurate and Efficient Missing Blocks Recovery for Large Time Series.”</strong> In <i>35th IEEE International Conference on Data Engineering (ICDE 2019)</i>. Macau, China, 2019.</li>
@@ -72,14 +75,19 @@ include 'header.php';
             </ul>
         </div>
         <div class="col-md-4">
-            <h3>Teams involved:</h3>
+            <h3><strong>Research Partners:</strong></h3>
 
-            <div style="text-align: center;">
-                <a href="https://exascale.info/"><img style="width: 60%;height: auto;"
+            <div>
+                <a href="https://exascale.info/"><img style="width: 50%;height: auto;"
                                                       src="/resources/Xi_logo.svg"/></a>
-                &nbsp;&nbsp;
+                &nbsp;<br/>&nbsp;
                 <a href="http://monetdb.org/"><img style="width: 35%;height: auto;"
                                                    src="/resources/mdbs_logo.png"/></a>
+            </div><h3><strong>Research Projects:</strong></h3>
+
+            <div>
+                <a href="https://fashionbrain-project.eu/"><img style="width: 50%;height: auto;"
+                                                      src="/resources/fashionbrain.jpg"/></a>
             </div>
         </div>
     </div>
