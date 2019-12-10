@@ -86,6 +86,9 @@ mclient -d revival revivaldump.sql
 rm revivaldump.sql
 rm .monetdb
 
+# add python code to /var/monetdb5
+sudo mv ReVival/.service/revival_py /var/monetdb5/revival_py
+
 # add to autostart
 /bin/echo -e "Description=Starts_ReVival_database_on_MonetDB\n\nWants=network.target\nAfter=syslog.target network-online.target\n\n[Service]\nType=simple\nExecStart=/usr/local/bin/monetdbd start /var/monetdb5/revival_farm\nRestart=on-failure\nRestartSec=10\nKillMode=process\n\n[Install]\nWantedBy=multi-user.target" | sudo tee /etc/systemd/system/monetdb-revival.service
 sudo systemctl enable monetdb-revival

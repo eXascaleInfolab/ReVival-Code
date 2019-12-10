@@ -85,6 +85,9 @@ mclient -d revival revivaldump.sql
 rm revivaldump.sql
 rm .monetdb
 
+# add python code to /var/monetdb5
+mv ReVival/.service/revival_py /var/monetdb5/revival_py
+
 ##################
 # set up website #
 ##################
