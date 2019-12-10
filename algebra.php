@@ -217,19 +217,6 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         $k = 3;
     }
 
-    /*
-    $qry = "
-    SELECT series_id, sys.epoch(datetime) * 1000 as timeval,
-        CASE
-            $series_cases
-            ELSE value
-        END AS value_recovered -- TODO: WARNING! REPLACE THIS VALUE
-    FROM $table
-    WHERE ($series_filter false)
-        AND (datetime >= sys.epoch($start) AND datetime <= sys.epoch($end));
-    ";
-    */
-
     $qry = "
     SELECT series_id, sys.epoch(datetime) * 1000 as timeval, value_recovered, runtime FROM sys.centroid_recovery_revival_runtime((
         SELECT series_id, datetime,
@@ -369,6 +356,83 @@ function recover_udf($conn, $explore_object, $threshold, $normtype, $table, $vis
         $explore_object->{"rmse_norm"} = $RMSE;
         $explore_object->{"mae_norm"} = $MAE;
     }
+}
+
+
+/** Performs the prediction on the last pred_percent of time series in the list using PY-UDF.
+ * Returns recovery and its technical data (#iters, recovery runtime).
+ * @param $conn : Object | monetdb connection object
+ * @param $table : string | table where the data has to be taken from
+ * @param $start : int | first timestamp for the data
+ * @param $end : int | last timestamp for the data
+ * @param $dataset : int | dataset id from where time series come
+ * @param $series : int[] | list of series ids to predict
+ * @param $pred_start : int | first timestamp where prediction starts
+ * @return array : array | hashmap with key = series id, value = array of [timestamp, predicted value] of the series
+ */
+function predict_udf($conn, $table, $start, $end, $dataset, $series, $pred_start, $qry_debug = false)
+{
+    // step 0 : load full list of series in a dataset
+    $series_full = array();
+
+    $qry = "SELECT serie_id FROM sets_series WHERE set_id = $dataset; ";
+    $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
+
+    while ($row = monetdb_fetch_assoc($res)) {
+        $current_id = "" . $row["serie_id"];
+        $series_full[] = $current_id;
+    }
+
+    // do prediction
+    $series_filter = "";
+
+    $series_dict = array();
+    foreach ($series as $pseries)
+    {
+        $series_dict["$pseries"] = array();
+    }
+    foreach ($series_full as $pseries)
+    {
+        $series_filter .= "series_id = $pseries OR ";
+    }
+
+    $qry = "
+    SELECT series_id, sys.epoch(datetime) * 1000 as timeval, value_recovered FROM sys.centroid_predict_revival((
+        SELECT series_id, datetime,
+            CASE
+                WHEN datetime >= sys.epoch($pred_start) THEN null
+                ELSE value
+            END AS value
+        FROM $table
+        WHERE ($series_filter false)
+            AND (datetime <= sys.epoch($end))
+    )) ORDER BY datetime;
+    ";
+
+    if ($qry_debug)
+    {
+        echo "SET SCHEMA data; ";
+        echo $qry;
+        exit();
+    }
+
+    $start_compute = microtime(true);
+    $res = monetdb_query($conn, monetdb_escape_string($qry)) or trigger_error(monetdb_last_error());
+
+    while ($row = monetdb_fetch_assoc($res)) {
+        $current_id = "" . $row["series_id"];
+
+        if (intval($row["timeval"]) >= $start && isset($series_dict[$current_id]))
+        {
+            $series_dict[$current_id][] = array(
+                intval($row["timeval"]),
+                floatval($row["value_recovered"])
+            );
+        }
+    }
+    $runtime = (microtime(true) - $start_compute) * 1000;
+
+    return $series_dict;
 }
 
 /** Performs the recovery of all missing values in all time series stored in the session object.

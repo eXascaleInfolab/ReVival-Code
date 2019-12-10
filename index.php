@@ -54,6 +54,7 @@ include 'header.php';
                         <li><a href="/recovery/recovdb.php">RecovDB</a></li>
                         <li><a href="/recovery/datasets.php">Real-world (batch)</a></li>
                         <li><a href="/cd/recovery.php">Recovery calculator</a></li>
+                        <li><a href="/prediction/datasets.php">Prediction</a></li>
                     </ul>
                 </div>
                 <div class="col-md-5">

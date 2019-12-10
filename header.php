@@ -61,6 +61,16 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">
+                        Trend analysis<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/prediction/datasets.php">Prediction</a></li>
+                        <li><a href="/index.php">Trend extraction</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">
                         Centroid Decomposition<span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
