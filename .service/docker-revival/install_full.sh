@@ -19,7 +19,10 @@ apt install -y pkg-config bison libssl-dev libbz2-dev
 apt-get install -y build-essential
 apt-get install -y clang
 apt-get install -y python-dev
-apt-get install -y python-numpy
+apt-get install -y python-pip
+pip2 install numpy
+pip2 install scipy
+pip2 install statsmodels
 
 #########
 # files #
