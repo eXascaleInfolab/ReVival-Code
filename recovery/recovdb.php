@@ -213,7 +213,7 @@ $query = "
             sets.source_url as source_url
         FROM
             sets 
-        WHERE sets.modified = FALSE AND sets.id > 4
+        WHERE sets.modified = FALSE AND sets.id > 4 AND sets.id <> 17 AND sets.id <> 19
         ORDER BY sets.id DESC
     ";
 
