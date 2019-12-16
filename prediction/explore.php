@@ -160,7 +160,12 @@ include '../header.php';
                                 <ul style="list-style: none;">
                                     <?php $basetscnt = 0;
                                     foreach ($series as $id => $serie_title) {
-                                        if (($basetscnt == 0 && $dataset != 8 && $dataset != 7) || ($basetscnt == 2 && $dataset == 7) || $basetscnt == 3)
+                                        if (
+                                            ($dataset == 6 && ($basetscnt == 2 || $basetscnt == 3)) ||
+                                            ($dataset == 5 && ($basetscnt == 3 || $basetscnt == 7)) ||
+                                            ($dataset == 17 && ($basetscnt == 6 || $basetscnt == 8)) ||
+                                            ($dataset == 19 && $basetscnt == 12)
+                                        )
                                         {
                                             echo "<li>
                                                         <label for=\"$id\">
@@ -188,11 +193,14 @@ include '../header.php';
                 </div>
                 <div class="form-group">
                     <label>number of values to predict:</label>
+                    <?php $fallback = $dataset != 5 && $dataset != 6 && $dataset != 17 && $dataset != 19 ?>
                     <select class="form-control" id="pred_percent" name="pred_percent">
-                        <option value="10" selected>10</option>
+                        <option value="10" <?php if ($dataset == 17 || $dataset == 19) echo "selected"?> >10</option>
                         <option value="15">15</option>
                         <option value="20">20</option>
                         <option value="25">25</option>
+                        <option value="30" <?php if ($dataset == 5) echo "selected"?>>30</option>
+                        <?php if ($dataset == 6) echo "<option value=\"40\" selected>40</option>"?>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-default pull-right">Predict</button>
@@ -338,6 +346,34 @@ include '../header.php';
                 colors: ["#7cb5ec", "#2b908f", "#a6c96a", "#876d5d", "#8f10ba", "#f7a35c", "#434348", "#f15c80", "#910000", "#8085e9", "#365e0c", "#90ed7d"]
             });
 
+            <?php
+                if ($dataset == 17)
+                {
+                    //fashion complete
+                    echo "let myStartDate = 1365687252051; let myEndDate = 1367431474965;";
+                }
+                elseif ($dataset == 19)
+                {
+                    //fashion w/ missing
+                    echo "let myStartDate = 1359627200000; let myEndDate = 1361885600000;";
+                }
+                elseif ($dataset == 5)
+                {
+                    //climate
+                    echo "let myStartDate = 1049690762030; let myEndDate = 1052006400000;";
+                }
+                elseif ($dataset == 6)
+                {
+                    //meteo/precipitation
+                    echo "let myStartDate = 1085832000000; let myEndDate = 1121126400000;";
+                }
+                else
+                {
+                    echo "let myStartDate = undefined; let myEndDate = undefined;";
+                }
+
+            ?>
+
             // create the chart
             var chart = $('#container').highcharts('StockChart', {
 
@@ -433,6 +469,15 @@ include '../header.php';
                     text: null
                 }
             });
+
+            //chart.xAxis[0].setExtremes(myStartDate, myEndDate);
+
+            setTimeout( function()
+            {
+                if (myStartDate != undefined) $('#container').highcharts().xAxis[0].setExtremes(myStartDate, myEndDate);
+            }, 100);
+
+            //reloadChartWithExtremes(1363678452, 1367431474);
         });
 
     });
