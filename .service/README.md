@@ -44,11 +44,19 @@ docker image build -t revival:1.0 .
 docker run -dit --name rev -p 8080:80 --hostname=revival.local revival:1.0
 ```
 
-To update the site to the newest version from the repository repeat the first step by re-downloading files, rebuilding the container and then simply removing the old one and redeploy the new version.
+To update the site to the newest version from the repository repeat the same process of re-downloading files, rebuilding the container while the old one is still running and then simply remove the old one and redeploy the new one.
 
 ```bash
+rm -rf docker-revival
+mkdir docker-revival
+cd docker-revival
+wget https://raw.githubusercontent.com/eXascaleInfolab/ReVival-Code/master/.service/docker-revival/install_full.sh
+wget https://raw.githubusercontent.com/eXascaleInfolab/ReVival-Code/master/.service/docker-revival/Dockerfile
+wget https://raw.githubusercontent.com/eXascaleInfolab/ReVival-Code/master/.service/docker-revival/dbrun.sh
 docker image build -t revival:1.0 .
+# this will stop and remove the old container
 docker container rm --force rev
+# the same command to deploy the new version
 docker run -dit --name rev -p 8080:80 --hostname=revival.local revival:1.0
 ```
 
