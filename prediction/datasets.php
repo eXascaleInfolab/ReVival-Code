@@ -32,6 +32,10 @@ while ($row = monetdb_fetch_assoc($result)) {
     $complete_datasets[] = $dataset_object;
 }
 
+$temp_dataset = $complete_datasets[0];
+$complete_datasets[0] = $complete_datasets[1];
+$complete_datasets[1] = $temp_dataset;
+
 foreach ($complete_datasets as $dataset_object) {
     $query = "
         SELECT

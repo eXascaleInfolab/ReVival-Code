@@ -163,8 +163,8 @@ include '../header.php';
                                         if (
                                             ($dataset == 6 && ($basetscnt == 2 || $basetscnt == 3)) ||
                                             ($dataset == 5 && ($basetscnt == 3 || $basetscnt == 7)) ||
-                                            ($dataset == 17 && ($basetscnt == 6 || $basetscnt == 8)) ||
-                                            ($dataset == 19 && $basetscnt == 12)
+                                            ($dataset == 17 && ($basetscnt == 1 || $basetscnt == 4)) ||
+                                            ($dataset == 19 && $basetscnt == 3)
                                         )
                                         {
                                             echo "<li>
@@ -192,7 +192,7 @@ include '../header.php';
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>number of values to predict:</label>
+                    <label># of observations to predict:</label>
                     <?php $fallback = $dataset != 5 && $dataset != 6 && $dataset != 17 && $dataset != 19 ?>
                     <select class="form-control" id="pred_percent" name="pred_percent">
                         <option value="10" <?php if ($dataset == 17 || $dataset == 19) echo "selected"?> >10</option>
