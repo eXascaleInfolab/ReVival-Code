@@ -9,6 +9,7 @@
 wget https://raw.githubusercontent.com/eXascaleInfolab/ReVival-Code/master/.service/install_full.sh
 sh install_full.sh
 ```
+<!---
 
 ## Deployment of monetdb only, revival site will be extracted and ready to be put in a necessary webserver folder
 
@@ -23,9 +24,9 @@ the site will be located in `~/ReVival/ReVival/`
 
 ```bash
 wget https://raw.githubusercontent.com/eXascaleInfolab/ReVival-Code/master/.service/install_siteonly.sh
-sh install_siteonly.sh
-```
-
+sh install_siteonly.sh 
+``` 
+-->
 
 ## Deployment of monetdb + revival site + apache + php7.1 as a docker container
 
